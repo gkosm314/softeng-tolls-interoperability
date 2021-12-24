@@ -145,7 +145,6 @@ def admin_hardreset(request, response_format = 'json'):
 				try:
 					update_provider_from_csv_line(row)
 				except Exception as e:
-					raise e
 					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 		#Insert stations
@@ -160,9 +159,7 @@ def admin_hardreset(request, response_format = 'json'):
 				try:
 					update_station_from_csv_line(row)
 				except Exception as e:
-					print(row)
-					raise e
-		# 			return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 		#Insert vehicles
 		with open(vehicles_csv_path) as csv_file:
@@ -176,7 +173,6 @@ def admin_hardreset(request, response_format = 'json'):
 				try:
 					update_vehicle_from_csv_line(row)
 				except Exception as e:
-					raise e
 					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 		#Insert passes
@@ -192,7 +188,6 @@ def admin_hardreset(request, response_format = 'json'):
 					update_pass_from_csv_line(row)
 					print(row)
 				except Exception as e:
-					raise e
 					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	return Response({"status": "OK"}, status.HTTP_200_OK)
@@ -207,7 +202,7 @@ def admin_healthcheck(request, response_format = 'json'):
 	Ensures that we are connected to the database.
 	"""
 
-	connection_string = "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"; 
+	connection_string = "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"; #?
 	try:
 		connection.ensure_connection()
 	except Exception as e:
