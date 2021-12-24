@@ -18,7 +18,6 @@ class Pass(models.Model):
     ishome = models.IntegerField(db_column='isHome')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'Passes'
 
 
@@ -30,7 +29,6 @@ class Payment(models.Model):
     status = models.CharField(max_length=10)
 
     class Meta:
-        managed = False
         db_table = 'Payments'
 
 
@@ -41,7 +39,6 @@ class Provider(models.Model):
     isvalid = models.IntegerField(db_column='isValid')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'Providers'
 
 
@@ -52,7 +49,6 @@ class Station(models.Model):
     isvalid = models.IntegerField(db_column='isValid')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'Stations'
 
 
@@ -65,5 +61,4 @@ class Vehicle(models.Model):
     isvalid = models.IntegerField(db_column='isValid')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'Vehicles'
