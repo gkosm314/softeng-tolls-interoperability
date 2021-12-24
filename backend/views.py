@@ -1,13 +1,18 @@
 from django.shortcuts import render
 from django.db import transaction, connection
 from django.contrib.auth.models import User
+from django.contrib.auth import logout
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
-from rest_framework.decorators import api_view
-from rest_framework.response import Response, permission_classes
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.authtoken.models import Token
 from .models import Pass, Payment, Provider, Station, Vehicle
 import csv
 from datetime import datetime
+
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
 
@@ -110,6 +115,7 @@ def update_pass_from_csv_line(row):
 
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_hardreset(request, response_format = 'json'):
 	"""
@@ -193,6 +199,7 @@ def admin_hardreset(request, response_format = 'json'):
 
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_healthcheck(request, response_format = 'json'):
 	"""
@@ -228,6 +235,7 @@ def initialize_super_user():
 
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_resetpasses(request, response_format = 'json'):
 	"""
@@ -249,6 +257,7 @@ def admin_resetpasses(request, response_format = 'json'):
 
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_resetstations(request, response_format = 'json'):
 	"""
@@ -278,6 +287,7 @@ def admin_resetstations(request, response_format = 'json'):
 
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_resetvehicles(request, response_format = 'json'):
 	"""
@@ -304,3 +314,20 @@ def admin_resetvehicles(request, response_format = 'json'):
 				return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	return Response({"status": "OK"}, status.HTTP_200_OK)	
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def logout_view(request, response_format = 'json'):
+	"""
+	Implements logout by deleting token
+	"""
+
+	try:
+		request.user.auth_token.delete() # simply delete the token to force a login
+	except (AttributeError):
+		return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	logout(request)	#django built-in logout (django.contrib.auth)
+	return Response(status=status.HTTP_200_OK)
