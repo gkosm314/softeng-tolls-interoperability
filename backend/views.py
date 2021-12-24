@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db import transaction
+from django.db import transaction, connection
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -186,3 +186,19 @@ def admin_hardreset(request, response_format = 'json'):
 					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	return Response({"status": "OK"}, status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def admin_healthcheck(request, response_format = 'json'):
+	"""
+	Implements /admin/healthcheck API call. Admin authentication required.
+	Ensures that we are connected to the database.
+	"""
+
+	connection_string = "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"; 
+	try:
+		connection.ensure_connection()
+	except Exception as e:
+		return Response({"status": "failed", "dbconnection": connection_string}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+	else:
+		return Response({"status": "OK", "dbconnection": connection_string}, status.HTTP_200_OK)
