@@ -14,6 +14,7 @@ import csv
 from datetime import datetime
 from .serializers import PassSerializer, StationSerializer
 from rest_framework import generics
+from django.db.models import Sum
 
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
@@ -356,7 +357,7 @@ class PassesPerStation(generics.ListAPIView):
 			data = self.get_paginated_response(serializer.data)
 		else:
 			serializer = self.get_serializer(queryset, many=True)
-		data = serializer.data
+			data = serializer.data
 		station = Station.objects.get(stationid=station_id)
 		station_provider = station.stationprovider.providername
 		response_data = {
@@ -367,5 +368,190 @@ class PassesPerStation(generics.ListAPIView):
 			'PeriodTo': date_to,
 			'NumberOfPasses': len(data),
 			'PassesList': data
+		}
+		return Response(response_data)
+
+
+class PassesAnalysis(generics.ListAPIView):
+	serializer_class = PassSerializer
+	authentication_classes = [TokenAuthentication]
+	permission_classes = [IsAuthenticated]
+
+	def get_queryset(self):
+		"""
+			Return all the passes on stations of op1 from vehicles with tags of op2
+			Assuming op1_ID and op2_ID are the providerAbbr fields
+		"""
+		op1_id_from_request = self.kwargs['op1_ID']
+		op2_id_from_request = self.kwargs['op2_ID']
+		"""
+			Grab corresponding ids for operators from user params
+			Only change in case the params from the user are not the providerAbbr must be made here, the rest of the code
+			will work just fine once the op1_id and op2_id variables are correctly set to the pk
+		"""
+		op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
+		op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		# Find all the vehicles with tags of op2
+		op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
+		# Find all the stations with tags of op1
+		op1_stations = Station.objects.filter(stationprovider=op1_id)
+		qs = Pass.objects.filter(timestamp__lte=date_to, timestamp__gte=date_from, stationref__in=op1_stations, vehicleref__in=op2_vehicles)
+		return qs
+
+	def list(self, request, *args, **kwargs):
+		"""
+			Overwrite the method to add custom values to the response
+		"""
+		queryset = self.filter_queryset(self.get_queryset())
+		page = self.paginate_queryset(queryset)
+		op1_id_from_request = self.kwargs['op1_ID']
+		op2_id_from_request = self.kwargs['op2_ID']
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		if page is not None:
+			serializer = self.get_serializer(page, many=True)
+			data = self.get_paginated_response(serializer.data)
+		else:
+			serializer = self.get_serializer(queryset, many=True)
+			data = serializer.data
+		response_data = {
+			'op1_ID': op1_id_from_request,
+			'op2_ID': op2_id_from_request,
+			'RequestTimestamp': time_now,
+			'PeriodFrom': date_from,
+			'PeriodTo': date_to,
+			'NumberOfPasses': len(data),
+			'PassesList': data
+		}
+		return Response(response_data)
+
+
+class PassesCost(generics.ListAPIView):
+	"""
+		This could be another form of generics ApiView, leaving it as it is because it is very similar
+		to the PassesAnalysis one (even though there is no listing involved in the Response)
+	"""
+
+	serializer_class = PassSerializer
+	authentication_classes = [TokenAuthentication]
+	permission_classes = [IsAuthenticated]
+
+	def get_queryset(self):
+		"""
+			Return all the passes on stations of op1 from vehicles with tags of op2
+			Assuming op1_ID and op2_ID are the providerAbbr fields
+		"""
+		op1_id_from_request = self.kwargs['op1_ID']
+		op2_id_from_request = self.kwargs['op2_ID']
+		"""
+			Grab corresponding ids for operators from user params
+			Only change in case the params from the user are not the providerAbbr must be made here, the rest of the code
+			will work just fine once the op1_id and op2_id variables are correctly set to the pk
+		"""
+		op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
+		op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		# Find all the vehicles with tags of op2
+		op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
+		# Find all the stations with tags of op1
+		op1_stations = Station.objects.filter(stationprovider=op1_id)
+		qs = Pass.objects.filter(timestamp__lte=date_to, timestamp__gte=date_from, stationref__in=op1_stations, vehicleref__in=op2_vehicles)
+		return qs
+
+	def list(self, request, *args, **kwargs):
+		"""
+			Overwrite the method to add custom values to the response
+		"""
+		queryset = self.filter_queryset(self.get_queryset())
+		price = queryset.aggregate(Sum('charge'))['charge__sum']
+		page = self.paginate_queryset(queryset)
+		op1_id_from_request = self.kwargs['op1_ID']
+		op2_id_from_request = self.kwargs['op2_ID']
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		if page is not None:
+			serializer = self.get_serializer(page, many=True)
+			data = self.get_paginated_response(serializer.data)
+		else:
+			serializer = self.get_serializer(queryset, many=True)
+			data = serializer.data
+		if len(data) == 0:
+			price = 0
+		response_data = {
+			'op1_ID': op1_id_from_request,
+			'op2_ID': op2_id_from_request,
+			'RequestTimestamp': time_now,
+			'PeriodFrom': date_from,
+			'PeriodTo': date_to,
+			'NumberOfPasses': len(data),
+			'PassesCost': price
+		}
+		return Response(response_data)
+class ChargesBy(generics.ListAPIView):
+	"""
+		This could be another form of generics ApiView, leaving it as it is because it is very similar
+		to the PassesAnalysis one (even though there is no listing involved in the Response)
+	"""
+
+	serializer_class = PassSerializer
+	authentication_classes = [TokenAuthentication]
+	permission_classes = [IsAuthenticated]
+
+	def get_queryset(self):
+		"""
+			Return all the passes on stations of op1 from vehicles with tags of op2
+			Assuming op1_ID and op2_ID are the providerAbbr fields
+		"""
+		op1_id_from_request = self.kwargs['op1_ID']
+		op2_id_from_request = self.kwargs['op2_ID']
+		"""
+			Grab corresponding ids for operators from user params
+			Only change in case the params from the user are not the providerAbbr must be made here, the rest of the code
+			will work just fine once the op1_id and op2_id variables are correctly set to the pk
+		"""
+		op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
+		op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		# Find all the vehicles with tags of op2
+		op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
+		# Find all the stations with tags of op1
+		op1_stations = Station.objects.filter(stationprovider=op1_id)
+		qs = Pass.objects.filter(timestamp__lte=date_to, timestamp__gte=date_from, stationref__in=op1_stations, vehicleref__in=op2_vehicles)
+		return qs
+
+	def list(self, request, *args, **kwargs):
+		"""
+			Overwrite the method to add custom values to the response
+		"""
+		queryset = self.filter_queryset(self.get_queryset())
+		price = queryset.aggregate(Sum('charge'))['charge__sum']
+		page = self.paginate_queryset(queryset)
+		op1_id_from_request = self.kwargs['op1_ID']
+		op2_id_from_request = self.kwargs['op2_ID']
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		if page is not None:
+			serializer = self.get_serializer(page, many=True)
+			data = self.get_paginated_response(serializer.data)
+		else:
+			serializer = self.get_serializer(queryset, many=True)
+			data = serializer.data
+		if len(data) == 0:
+			price = 0
+		response_data = {
+			'op1_ID': op1_id_from_request,
+			'op2_ID': op2_id_from_request,
+			'RequestTimestamp': time_now,
+			'PeriodFrom': date_from,
+			'PeriodTo': date_to,
+			'NumberOfPasses': len(data),
+			'PassesCost': price
 		}
 		return Response(response_data)
