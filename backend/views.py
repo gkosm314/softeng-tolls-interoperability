@@ -240,3 +240,34 @@ def admin_resetpasses(request, response_format = 'json'):
 		return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
 	return Response({"status": "OK"}, status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def admin_resetstations(request, response_format = 'json'):
+	"""
+	Implements /admin/resetstations API call. Admin authentication required.
+	Marks all Station entries as invalid and then enters all the station in the sample data as valid stations.
+	"""
+
+	#Read sample data from csv file located at the following paths
+	stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
+
+	try:
+		all_stations_invalid()
+	except Exception as e:
+		return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	with open(stations_csv_path) as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=';')
+
+		#Skip first line(headers)
+		next(csv_reader)
+
+		#Process each line
+		for row in csv_reader:
+			try:
+				update_station_from_csv_line(row)
+			except Exception as e:
+				return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+			
+	return Response({"status": "OK"}, status.HTTP_200_OK)
