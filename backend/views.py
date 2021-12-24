@@ -9,6 +9,12 @@ import csv
 from datetime import datetime
 
 
+#Read sample data from csv file located at the following paths
+stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
+vehicles_csv_path = 'backend/sample_data/sampledata01_vehicles_100.csv'
+providers_csv_path = 'backend/sample_data/sampledata01_providers.csv'
+passes_csv_path = 'backend/sample_data/sampledata01_passes100_8000.csv'
+
 def all_stations_invalid():
 	"""
 	Makes all Station entries invalid
@@ -109,12 +115,6 @@ def admin_hardreset(request, response_format = 'json'):
 
 	Important note: this API call takes a lot of time to finish, since it inserts over 30000 passes in the database
 	"""	
-
-	#Read sample data from csv file located at the following paths
-	stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
-	vehicles_csv_path = 'backend/sample_data/sampledata01_vehicles_100.csv'
-	providers_csv_path = 'backend/sample_data/sampledata01_providers.csv'
-	passes_csv_path = 'backend/sample_data/sampledata01_passes100_8000.csv'
 
 	with transaction.atomic():
 		#Delete everything
@@ -249,9 +249,6 @@ def admin_resetstations(request, response_format = 'json'):
 	Marks all Station entries as invalid and then enters all the station in the sample data as valid stations.
 	"""
 
-	#Read sample data from csv file located at the following paths
-	stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
-
 	try:
 		all_stations_invalid()
 	except Exception as e:
@@ -279,9 +276,6 @@ def admin_resetvehicles(request, response_format = 'json'):
 	Implements /admin/resetvehicles API call. Admin authentication required.
 	Marks all Vehicle entries as invalid and then enters all the vehicles in the sample data as valid vehicles.
 	"""
-	
-	#Read sample data from csv file located at the following paths
-	vehicles_csv_path = 'backend/sample_data/sampledata01_vehicles_100.csv'
 
 	try:
 		all_vehicles_invalid()
