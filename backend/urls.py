@@ -11,6 +11,6 @@ urlpatterns = [
     path('admin/resetvehicles', views.admin_resetvehicles, name='resetvehicles_url'),
     path('admin/hardreset', views.admin_hardreset, name='hardreset_url'),
 
-    # path('login', views.obtain_auth_token, name = "login_url"), #this refers to the views imported from rest_framework.authtoken
-    # path('logout', views.logout_view, name = "logout_url"),
+    path('login', views.obtain_auth_token, name = "login_url"), #this refers to the views imported from rest_framework.authtoken
+    path('logout', views.logout_view, name = "logout_url"),
 ]
