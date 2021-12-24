@@ -171,21 +171,21 @@ def admin_hardreset(request, response_format = 'json'):
 					raise e
 					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-		# #Insert passes
-		# with open(passes_csv_path) as csv_file:
-		# 	csv_reader = csv.reader(csv_file, delimiter=';')
+		#Insert passes
+		with open(passes_csv_path) as csv_file:
+			csv_reader = csv.reader(csv_file, delimiter=';')
 
-		# 	#Skip first line(headers)
-		# 	next(csv_reader)
+			#Skip first line(headers)
+			next(csv_reader)
 
-		# 	#Process each line
-		# 	for row in csv_reader:
-		# 		try:
-		# 			update_pass_from_csv_line(row)
-		# 			print(row)
-		# 		except Exception as e:
-		# 			raise e
-		# 			return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+			#Process each line
+			for row in csv_reader:
+				try:
+					update_pass_from_csv_line(row)
+					print(row)
+				except Exception as e:
+					raise e
+					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	return Response({"status": "OK"}, status.HTTP_200_OK)
 
