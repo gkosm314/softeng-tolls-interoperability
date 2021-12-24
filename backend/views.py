@@ -8,6 +8,7 @@ from .models import Pass, Payment, Provider, Station, Vehicle
 import csv
 from datetime import datetime
 
+#Note: Django REST Framework's Response object can handle both JSON and CSV responses
 
 #Read sample data from csv file located at the following paths
 stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
