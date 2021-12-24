@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.db import transaction, connection
 from django.contrib.auth.models import User
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from rest_framework.response import Response, permission_classes
 from .models import Pass, Payment, Provider, Station, Vehicle
 import csv
 from datetime import datetime
@@ -109,6 +110,7 @@ def update_pass_from_csv_line(row):
 
 
 @api_view(['POST'])
+@permission_classes([IsAdminUser])
 def admin_hardreset(request, response_format = 'json'):
 	"""
 	Implements /admin/hardreset API call. Admin authentication required.
@@ -191,6 +193,7 @@ def admin_hardreset(request, response_format = 'json'):
 
 
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def admin_healthcheck(request, response_format = 'json'):
 	"""
 	Implements /admin/healthcheck API call. Admin authentication required.
@@ -204,6 +207,7 @@ def admin_healthcheck(request, response_format = 'json'):
 		return Response({"status": "failed", "dbconnection": connection_string}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 	else:
 		return Response({"status": "OK", "dbconnection": connection_string}, status.HTTP_200_OK)
+
 
 
 def initialize_super_user():
@@ -224,6 +228,7 @@ def initialize_super_user():
 
 
 @api_view(['POST'])
+@permission_classes([IsAdminUser])
 def admin_resetpasses(request, response_format = 'json'):
 	"""
 	Implements /admin/resetpasses API call. Admin authentication required.
@@ -244,6 +249,7 @@ def admin_resetpasses(request, response_format = 'json'):
 
 
 @api_view(['POST'])
+@permission_classes([IsAdminUser])
 def admin_resetstations(request, response_format = 'json'):
 	"""
 	Implements /admin/resetstations API call. Admin authentication required.
@@ -272,6 +278,7 @@ def admin_resetstations(request, response_format = 'json'):
 
 
 @api_view(['POST'])
+@permission_classes([IsAdminUser])
 def admin_resetvehicles(request, response_format = 'json'):
 	"""
 	Implements /admin/resetvehicles API call. Admin authentication required.
