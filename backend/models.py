@@ -23,8 +23,8 @@ class Pass(models.Model):
 
 class Payment(models.Model):
     transactionid = models.AutoField(db_column='transactionID', primary_key=True)  # Field name made lowercase.
-    providercreditedid = models.ForeignKey('Provider', models.DO_NOTHING, db_column='providerCreditedID')  # Field name made lowercase.
-    providerdebitedid = models.ForeignKey('Provider', models.DO_NOTHING, db_column='providerDebitedID')  # Field name made lowercase.
+    providercreditedid = models.ForeignKey('Provider', models.DO_NOTHING, db_column='providerCreditedID', related_name = 'provider_credited_id')  # Field name made lowercase.  
+    providerdebitedid = models.ForeignKey('Provider', models.DO_NOTHING, db_column='providerDebitedID', related_name = 'provider_debited_id')  # Field name made lowercase.  
     amount = models.IntegerField()
     status = models.CharField(max_length=10)
 
