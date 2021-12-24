@@ -170,21 +170,21 @@ def admin_hardreset(request, response_format = 'json'):
 					raise e
 					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-		#Insert passes
-		with open(passes_csv_path) as csv_file:
-			csv_reader = csv.reader(csv_file, delimiter=';')
+		# #Insert passes
+		# with open(passes_csv_path) as csv_file:
+		# 	csv_reader = csv.reader(csv_file, delimiter=';')
 
-			#Skip first line(headers)
-			next(csv_reader)
+		# 	#Skip first line(headers)
+		# 	next(csv_reader)
 
-			#Process each line
-			for row in csv_reader:
-				try:
-					update_pass_from_csv_line(row)
-					print(row)
-				except Exception as e:
-					raise e
-					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+		# 	#Process each line
+		# 	for row in csv_reader:
+		# 		try:
+		# 			update_pass_from_csv_line(row)
+		# 			print(row)
+		# 		except Exception as e:
+		# 			raise e
+		# 			return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	return Response({"status": "OK"}, status.HTTP_200_OK)
 
@@ -258,6 +258,37 @@ def admin_resetstations(request, response_format = 'json'):
 		return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	with open(stations_csv_path) as csv_file:
+			csv_reader = csv.reader(csv_file, delimiter=';')
+
+			#Skip first line(headers)
+			next(csv_reader)
+
+			#Process each line
+			for row in csv_reader:			
+				try:
+					update_station_from_csv_line(row)
+				except Exception as e:
+					return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+			
+	return Response({"status": "OK"}, status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def admin_resetvehicles(request, response_format = 'json'):
+	"""
+	Implements /admin/resetvehicles API call. Admin authentication required.
+	Marks all Vehicle entries as invalid and then enters all the vehicles in the sample data as valid vehicles.
+	"""
+	
+	#Read sample data from csv file located at the following paths
+	vehicles_csv_path = 'backend/sample_data/sampledata01_vehicles_100.csv'
+
+	try:
+		all_vehicles_invalid()
+	except Exception as e:
+		return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	with open(vehicles_csv_path) as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=';')
 
 		#Skip first line(headers)
@@ -266,8 +297,8 @@ def admin_resetstations(request, response_format = 'json'):
 		#Process each line
 		for row in csv_reader:
 			try:
-				update_station_from_csv_line(row)
+				update_vehicle_from_csv_line(row)
 			except Exception as e:
 				return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
-			
-	return Response({"status": "OK"}, status.HTTP_200_OK)
+
+	return Response({"status": "OK"}, status.HTTP_200_OK)	
