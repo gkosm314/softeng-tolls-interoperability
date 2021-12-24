@@ -28,7 +28,7 @@ def all_stations_invalid():
 	"""
 
 	for s in Station.objects.all():
-		s.is_valid = 0
+		s.isvalid = 0
 		s.save()
 
 
@@ -38,7 +38,7 @@ def all_vehicles_invalid():
 	"""
 
 	for v in Vehicle.objects.all():
-		v.is_valid = 0
+		v.isvalid = 0
 		v.save()
 
 
