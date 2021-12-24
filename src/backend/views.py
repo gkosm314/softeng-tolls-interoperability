@@ -12,6 +12,8 @@ from rest_framework.authtoken.models import Token
 from .models import Pass, Payment, Provider, Station, Vehicle
 import csv
 from datetime import datetime
+from .serializers import PassSerializer, StationSerializer
+from rest_framework import generics
 
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
@@ -326,3 +328,44 @@ def logout_view(request, response_format = 'json'):
 
 	logout(request)	#django built-in logout (django.contrib.auth)
 	return Response(status=status.HTTP_200_OK)
+
+
+class PassesPerStation(generics.ListAPIView):
+	serializer_class = PassSerializer
+	authentication_classes = [TokenAuthentication]
+	permission_classes = [IsAuthenticated]
+
+	def get_queryset(self):
+		station_id = self.kwargs['stationID']
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		return Pass.objects.filter(stationref__stationid=station_id, timestamp__lte=date_to, timestamp__gte=date_from)
+
+	def list(self, request, *args, **kwargs):
+		"""
+			Overwrite the method to add custom values to the response
+		"""
+		queryset = self.filter_queryset(self.get_queryset())
+		page = self.paginate_queryset(queryset)
+		station_id = self.kwargs['stationID']
+		date_from = self.kwargs['datefrom']
+		date_to = self.kwargs['dateto']
+		time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		if page is not None:
+			serializer = self.get_serializer(page, many=True)
+			data = self.get_paginated_response(serializer.data)
+		else:
+			serializer = self.get_serializer(queryset, many=True)
+		data = serializer.data
+		station = Station.objects.get(stationid=station_id)
+		station_provider = station.stationprovider.providername
+		response_data = {
+			'Station': station_id,
+			'StationOperator': station_provider,
+			'RequestTimestamp': time_now,
+			'PeriodFrom': date_from,
+			'PeriodTo': date_to,
+			'NumberOfPasses': len(data),
+			'PassesList': data
+		}
+		return Response(response_data)

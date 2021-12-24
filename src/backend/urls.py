@@ -13,4 +13,5 @@ urlpatterns = [
 
     path('login', views.obtain_auth_token, name = "login_url"), #this refers to the views imported from rest_framework.authtoken
     path('logout', views.logout_view, name = "logout_url"),
+    path('PassesPerStation/<stationID>/<datefrom>/<dateto>', views.PassesPerStation.as_view(), name='passes_per_station'),
 ]
