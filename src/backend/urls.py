@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 
 #TODO: handle csv format admin/healthcheck?format=<response_format>'
@@ -17,4 +18,10 @@ urlpatterns = [
     path('PassesAnalysis/<op1_ID>/<op2_ID>/<datefrom>/<dateto>', views.PassesAnalysis.as_view(), name='passes_analysis'),
     path('PassesCost/<op1_ID>/<op2_ID>/<datefrom>/<dateto>', views.PassesCost.as_view(), name='passes_analysis'),
     path('ChargesBy/<op_ID>/<datefrom>/<dateto>', views.ChargesBy.as_view(), name='passes_analysis'),
+
+    # Schema urls
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
