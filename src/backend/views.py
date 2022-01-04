@@ -332,6 +332,9 @@ def logout_view(request, response_format = 'json'):
 
 
 class PassesPerStation(generics.ListAPIView):
+    """
+    Return a list with all the passes for a given stationID and date range
+    """
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -343,9 +346,6 @@ class PassesPerStation(generics.ListAPIView):
         return Pass.objects.filter(stationref__stationid=station_id, timestamp__lte=date_to, timestamp__gte=date_from)
 
     def list(self, request, *args, **kwargs):
-        """
-            Overwrite the method to add custom values to the response
-        """
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         station_id = self.kwargs['stationID']
@@ -373,6 +373,11 @@ class PassesPerStation(generics.ListAPIView):
 
 
 class PassesAnalysis(generics.ListAPIView):
+    """
+        Return all the passes on stations of op1 from vehicles with tags of op2
+
+        Assuming op1_ID and op2_ID are the providerAbbr fields
+    """
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -430,6 +435,11 @@ class PassesAnalysis(generics.ListAPIView):
 
 
 class PassesCost(generics.ListAPIView):
+    """
+        Return the (aggregated) cost of passes on stations of op1 from vehicles with tags of op2
+
+        Assuming op1_ID and op2_ID are the providerAbbr fields
+    """
     """
         This could be another form of generics ApiView, leaving it as it is because it is very similar
         to the PassesAnalysis one (even though there is no listing involved in the Response)
@@ -495,6 +505,9 @@ class PassesCost(generics.ListAPIView):
 
 
 class ChargesBy(generics.GenericAPIView):
+    """
+        Return the amount each operator owes to the provided op_ID for a given period of time
+    """
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -522,9 +535,7 @@ class ChargesBy(generics.GenericAPIView):
         return response_data
 
     def get(self, request, *args, **kwargs):
-        """
-            Overwrite the method to add custom values to the response
-        """
+
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         op_id_from_request = self.kwargs['op_ID']
         other_operators_ids = Provider.objects.exclude(providerabbr=op_id_from_request)
