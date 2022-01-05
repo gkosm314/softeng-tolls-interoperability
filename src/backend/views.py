@@ -338,6 +338,7 @@ class PassesPerStation(generics.ListAPIView):
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         station_id = self.kwargs['stationID']
@@ -346,7 +347,10 @@ class PassesPerStation(generics.ListAPIView):
         return Pass.objects.filter(stationref__stationid=station_id, timestamp__lte=date_to, timestamp__gte=date_from)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+        except Exception as e:
+            return self.invalid_request_response
         page = self.paginate_queryset(queryset)
         station_id = self.kwargs['stationID']
         date_from = self.kwargs['datefrom']
@@ -358,7 +362,11 @@ class PassesPerStation(generics.ListAPIView):
         else:
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
-        station = Station.objects.get(stationid=station_id)
+        try:
+            station = Station.objects.get(stationid=station_id)
+        except Exception as e:
+            # TODO: Decide if we need to return 500 or 400 error codes when an invalid param is passed eg here
+            return self.invalid_request_response
         station_provider = station.stationprovider.providername
         response_data = {
             'Station': station_id,
@@ -381,6 +389,7 @@ class PassesAnalysis(generics.ListAPIView):
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         """
@@ -396,6 +405,7 @@ class PassesAnalysis(generics.ListAPIView):
         """
         op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
         op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
+
         date_from = self.kwargs['datefrom']
         date_to = self.kwargs['dateto']
         # Find all the vehicles with tags of op2
@@ -409,7 +419,10 @@ class PassesAnalysis(generics.ListAPIView):
         """
             Overwrite the method to add custom values to the response
         """
-        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+        except Exception as e:
+            return self.invalid_request_response
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
         op2_id_from_request = self.kwargs['op2_ID']
@@ -448,6 +461,7 @@ class PassesCost(generics.ListAPIView):
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         """
@@ -476,7 +490,10 @@ class PassesCost(generics.ListAPIView):
         """
             Overwrite the method to add custom values to the response
         """
-        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+        except Exception as e:
+            return self.invalid_request_response
         price = queryset.aggregate(Sum('charge'))['charge__sum']
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
@@ -511,6 +528,7 @@ class ChargesBy(generics.GenericAPIView):
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_costs_between_operators(self, op1_abbr, op2_abbr, date_from, date_to):
         op1_id = (Provider.objects.get(providerabbr=op1_abbr)).providerid
@@ -546,7 +564,10 @@ class ChargesBy(generics.GenericAPIView):
 
         for visiting_operator_id in other_operators_ids:
             visiting_operator_abbr = visiting_operator_id.providerabbr
-            cost = self.get_costs_between_operators(op_id_from_request, visiting_operator_abbr, date_from, date_to)
+            try:
+                cost = self.get_costs_between_operators(op_id_from_request, visiting_operator_abbr, date_from, date_to)
+            except Exception as e:
+                return self.invalid_request_response
             costs.append(cost)
         response_data = {
             'op_ID': op_id_from_request,
