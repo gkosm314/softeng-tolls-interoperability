@@ -15,6 +15,7 @@ from datetime import datetime
 from .serializers import PassSerializer, StationSerializer
 from rest_framework import generics
 from django.db.models import Sum
+from .permissions import UserBelongsToProviderGroup
 
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
@@ -337,7 +338,7 @@ class PassesPerStation(generics.ListAPIView):
     """
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -388,7 +389,7 @@ class PassesAnalysis(generics.ListAPIView):
     """
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -460,7 +461,7 @@ class PassesCost(generics.ListAPIView):
 
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -527,7 +528,7 @@ class ChargesBy(generics.GenericAPIView):
     """
     serializer_class = PassSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_costs_between_operators(self, op1_abbr, op2_abbr, date_from, date_to):
