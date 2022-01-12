@@ -1,17 +1,15 @@
 from django.shortcuts import render
-from django.contrib.auth import logout
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework import generics
 from .permissions import UserBelongsToProviderGroup
 
-from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles
-from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy
+from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles, logout_view
+from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView
 
 
 @api_view(['POST'])
@@ -66,7 +64,7 @@ def api_admin_resetvehicles(request, response_format = 'json'):
     return admin_resetvehicles(request, response_format)
 
 
-class LoginView(ObtainAuthToken):
+class ApiLoginView(LoginView):
 	"""
 	Perfroms user login.\n
 	Returns a unique token the user will use to make API calls that require authentication.
@@ -77,18 +75,12 @@ class LoginView(ObtainAuthToken):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def logout_view(request, response_format = 'json'):
+def api_logout_view(request, response_format = 'json'):
     """
 	Performs user logout by making the user's token invalid.
     """
 
-    try:
-        request.user.auth_token.delete() # simply delete the token to force a login
-    except (AttributeError):
-        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    logout(request)	#django built-in logout (django.contrib.auth)
-    return Response(status=status.HTTP_200_OK)
+    return logout_view(request, response_format)
 
 
 api_authentication = [TokenAuthentication]

@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.db import transaction, connection
 from django.contrib.auth.models import User
+from django.contrib.auth import logout
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.authtoken.views import ObtainAuthToken
 from .models import Pass, Payment, Provider, Station, Vehicle
 import csv
 from datetime import datetime
@@ -291,6 +293,24 @@ def admin_resetvehicles(request, response_format = 'json'):
                 return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return Response({"status": "OK"}, status.HTTP_200_OK)
+
+
+class LoginView(ObtainAuthToken):
+    pass
+
+
+def logout_view(request, response_format = 'json'):
+    """
+    Performs user logout by making the user's token invalid.
+    """
+
+    try:
+        request.user.auth_token.delete() # simply delete the token to force a login
+    except (AttributeError):
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    logout(request) #django built-in logout (django.contrib.auth)
+    return Response(status=status.HTTP_200_OK)
 
 
 class PassesPerStation(generics.ListAPIView):
