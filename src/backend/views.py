@@ -112,7 +112,7 @@ def update_pass_from_csv_line(row):
     new_charge = row[4]
 
     #If you passed from a provider's stations using said provider's tag, then the pass is a home pass
-    new_ishome = (new_providerabbr.providerid == new_stationref.stationprovider)
+    new_ishome = (new_providerabbr.providerid == new_vehicleref.providerabbr.providerid)
 
     new_pass = Pass(passid = new_passid, timestamp = new_timestamp, stationref = new_stationref, vehicleref = new_vehicleref, charge = new_charge, providerabbr = new_providerabbr, ishome = new_ishome)
     new_pass.save()
