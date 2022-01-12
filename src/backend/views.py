@@ -119,8 +119,6 @@ def update_pass_from_csv_line(row):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAdminUser])
 def admin_hardreset(request, response_format = 'json'):
     """
     Implements /admin/hardreset API call. Admin authentication required.
@@ -198,8 +196,6 @@ def admin_hardreset(request, response_format = 'json'):
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAdminUser])
 def admin_healthcheck(request, response_format = 'json'):
     """
     Implements /admin/healthcheck API call. Admin authentication required.
@@ -234,8 +230,6 @@ def initialize_super_user():
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAdminUser])
 def admin_resetpasses(request, response_format = 'json'):
     """
     Implements /admin/resetpasses API call. Admin authentication required.
@@ -256,8 +250,6 @@ def admin_resetpasses(request, response_format = 'json'):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAdminUser])
 def admin_resetstations(request, response_format = 'json'):
     """
     Implements /admin/resetstations API call. Admin authentication required.
@@ -286,8 +278,6 @@ def admin_resetstations(request, response_format = 'json'):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAdminUser])
 def admin_resetvehicles(request, response_format = 'json'):
     """
     Implements /admin/resetvehicles API call. Admin authentication required.
