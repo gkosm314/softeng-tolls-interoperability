@@ -116,9 +116,10 @@ def cli_admin_users(args):
         print("An unexpected error occured.")
         print("Error: {}".format(e))
     else:
+        group_string = "".join([str(g) for g in u.groups.all()])
         print("User {} found.".format(args.username))
         print("----------------------------------------------------")
-        print("User: {}\nEmail: {}\nGroups: {}\nIs superuser: {}\nDate joined: {}".format(u.username,u.email,u.groups,u.is_superuser,u.date_joined))
+        print("User: {}\nEmail: {}\nGroups: {}\nIs superuser: {}\nDate joined: {}".format(u.username,u.email,group_string,u.is_superuser,u.date_joined))
         print("----------------------------------------------------")
 
 
