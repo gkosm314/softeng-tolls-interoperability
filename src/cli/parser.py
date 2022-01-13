@@ -1,5 +1,35 @@
-import argparse
-from commands import * 
+#All imports that use any django feature should be imported in __main__ at the end of this file.
+#The import should be placed after the invocation of django_settings_setup.
+#Otherwise, the import will fail, because the import of any django module requires the changes made by django_settings_setup().
+#As a rule of thumb, import everything inside __main_ at the end of the file, except python build-in modules.
+#Warning: Do not remove "import os, sys, pathlib" from the top of the file. They are required for the successful execution of django_settings_setup
+import argparse, os, sys, pathlib 
+
+def django_settings_setup():
+	"""
+	Our CLI uses Django through the commands.py script.
+	In order to use django we must set up the adequate enviroment (our project's settings) and to run django.setup().
+	These are things manage.py would automatically do if we used "python manage.py shell < parser.py".
+	However, manage.py has an argument parser that interferes with ours, so in order to avoid making changes to manage.py, we set up django manually.
+	"""
+	
+	#Our file is located at ./cli/parser.py and we want to use ./tolls/settings.py
+	#root_directory_path is the ansolute path to .
+	root_directory_path = pathlib.Path(__file__).parent.resolve().parent.resolve()
+	
+	#Save current working directory and change the working directory to root_directory_path
+	intitial_working_directory = os.getcwd()
+	os.chdir(root_directory_path)
+	
+	#use django settings, import django module and setup django
+	sys.path.append(os.getcwd())
+	os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tolls.settings")
+	import django
+	django.setup()
+	
+	#Reset working directory to the initial working directory
+	os.chdir(intitial_working_directory)
+
 
 def valid_username_format(s):
 	"""
@@ -7,10 +37,11 @@ def valid_username_format(s):
 	"""
 	try:
 		s.encode("iso-8859-1")
-		return True
+		return s
 	except UnicodeDecodeError:
 		invalid_username_error_msg = "\nInvalid username format. Usernames should not contain non-latin characters.\n"
 		raise ArgumentTypeError(invalid_username_error_msg)
+
 
 def valid_date_format(d):
 	"""
@@ -23,17 +54,17 @@ def valid_date_format(d):
 		print(invalid_date_error_msg)
 		raise ArgumentTypeError(invalid_date_error_msg)
 
+
 def setup_main_parser():
 	"""
-	Returns the main parser and the subparser of the 'admin' subcommand.
-	These parser do not include the arguements that are specific to each admin action.
-	These arguments are added seperately for each case in the main function.
+	Returns a two item tuple with the main(top-level) parser and the subparser of the 'admin' subcommand.
+	These parser do not include the arguements that are specific to each admin action-command (--usermod, --users, --passesupd).
+	The arguments for the admin-action commands are added seperately for each case in the main function.
 	"""
 
 	### Create the top-level parser ###
 	cli_parser = argparse.ArgumentParser(description ='tolls interoperability command line tool')
 	cli_subparsers = cli_parser.add_subparsers(required = True, dest = "subcommand_name") #the seleceted subcommand will be stored at dest
-	cli_subparsers_list = []
 
 
 	### Create the subparsers of the top-level parser###
@@ -49,28 +80,23 @@ def setup_main_parser():
 	admin_actions_parser = cli_subparsers.add_parser('admin', help = 'admin actions command', add_help = False)
 
 	### Add all the subparsers to a list in order to manipulate them together when needed###
-	cli_subparsers_list.append(healthcheck_parser)
-	cli_subparsers_list.append(resetpasses_parser)
-	cli_subparsers_list.append(resetstations_parser)
-	cli_subparsers_list.append(resetvehicles_parser)
-	cli_subparsers_list.append(login_parser)
-	cli_subparsers_list.append(passesperstation_parser)
-	cli_subparsers_list.append(passesanalysis_parser)
-	cli_subparsers_list.append(passescost_parser)
-	cli_subparsers_list.append(chargesby_parser)
+	database_commands = [healthcheck_parser, resetpasses_parser, resetstations_parser, resetvehicles_parser]
+	user_commands = [login_parser]
+	query_commands = [passesperstation_parser, passesanalysis_parser, passescost_parser, chargesby_parser]
+	cli_subparsers_list = database_commands + user_commands + query_commands
 	
 
 	### Set default function that handles each subparser ###
-	healthcheck_parser.set_defaults(func = cli_admin_healthcheck)
-	resetpasses_parser.set_defaults(func = cli_admin_resetpasses)
-	resetstations_parser.set_defaults(func = cli_admin_resetstations)
-	resetstations_parser.set_defaults(func = cli_admin_resetvehicles)
-	login_parser.set_defaults(func = cli_login)
-	passesperstation_parser.set_defaults(func = cli_passesperstation)
-	passesanalysis_parser.set_defaults(func = cli_passesanalysis)
-	passescost_parser.set_defaults(func = cli_passescost)
-	chargesby_parser.set_defaults(func = cli_chargesby)
-	#We set admin_actions_parser's func in main() function
+	healthcheck_parser.set_defaults(func = commands.cli_admin_healthcheck)
+	resetpasses_parser.set_defaults(func = commands.cli_admin_resetpasses)
+	resetstations_parser.set_defaults(func = commands.cli_admin_resetstations)
+	resetstations_parser.set_defaults(func = commands.cli_admin_resetvehicles)
+	login_parser.set_defaults(func = commands.cli_login)
+	passesperstation_parser.set_defaults(func = commands.cli_passesperstation)
+	passesanalysis_parser.set_defaults(func = commands.cli_passesanalysis)
+	passescost_parser.set_defaults(func = commands.cli_passescost)
+	chargesby_parser.set_defaults(func = commands.cli_chargesby)
+	#We set the default funcs for admin action commands in main()
 
 
 	### Add arguments to the subparsers ###
@@ -100,7 +126,7 @@ def setup_main_parser():
 	admin_action_flag_argument.add_argument('--users', action='store_true', help="prints info about a specific user")
 	admin_action_flag_argument.add_argument('--passesupd', action='store_true', help="uploads new passes")
 
-	#arguments for all the commands
+	#format argument for all the commands except the admin action commands
 	for subparser in cli_subparsers_list:
 		subparser.add_argument('--format', choices = ['json', 'csv'] , required = True, help = "output format")
 
@@ -128,16 +154,16 @@ def main():
 		if known_args.usermod:
 			admin_parser.add_argument('--username', required="True", type= valid_username_format)
 			admin_parser.add_argument('--passw', required="True")
-			admin_parser.set_defaults(func = cli_admin_usermod)
+			admin_parser.set_defaults(func = commands.cli_admin_usermod)
 		elif known_args.users:
 			admin_parser.add_argument('username', type= valid_username_format)
-			admin_parser.set_defaults(func = cli_admin_users)
+			admin_parser.set_defaults(func = commands.cli_admin_users)
 		elif known_args.passesupd:
 			admin_parser.add_argument('--source', required="True")
-			admin_parser.set_defaults(func = cli_admin_passesupd)
+			admin_parser.set_defaults(func = commands.cli_admin_passesupd)
 		elif known_args.help:
-			cli_admin_help()
-			return
+			commands.cli_admin_help()
+			return 0
 
 	#Now that all the arguments are included for every case, parse the args and execute the command with args.func(args)
 	try:
@@ -147,9 +173,21 @@ def main():
 		print("Use -h/--help argument to print help.")
 		return 1
 	else:
-		#args.func(args)
+		args.func(args)
 		return 0
 
 
 if __name__ == '__main__':
-	main()
+	try:
+		#Use django project's settings
+		django_settings_setup()
+	except Exception as e:
+		print("Could not setup django to use it in our CLI.")
+		print("Error: {}".format(e))
+	else:
+
+		#Make all django-related imports here. Modules that use django modules are also considered django-related.
+		import commands 
+
+		#Run parser
+		main()
