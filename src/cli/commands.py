@@ -7,6 +7,8 @@ import csv
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from backend.backend import update_pass_from_csv_line
+from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles, logout_view
+
 
 #Helper functions
 #These functions are called by the main functions (below)
@@ -44,19 +46,19 @@ def cli_change_password(user_object, username, password):
 #Main functions
 #These functions are called by parser.py
 def cli_admin_healthcheck(args):
-    pass
+    print(admin_healthcheck(args.format).data)
     
 
 def cli_admin_resetpasses(args):
-    pass
+    print(admin_resetpasses(args.format).data)
  
 
 def cli_admin_resetstations(args):
-    pass
+    print(admin_resetstations(args.format).data)
 
 
 def cli_admin_resetvehicles(args):
-    pass
+    print(admin_resetvehicles(args.format).data)
 
 
 def cli_login(args):
