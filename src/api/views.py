@@ -21,7 +21,7 @@ def api_admin_hardreset(request, response_format = 'json'):
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_hardreset(request, response_format)
+    return admin_hardreset(response_format)
 
 
 @api_view(['GET'])
@@ -31,7 +31,7 @@ def api_admin_healthcheck(request, response_format = 'json'):
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_healthcheck(request, response_format)
+    return admin_healthcheck(response_format)
 
 
 @api_view(['POST'])
@@ -41,7 +41,7 @@ def api_admin_resetpasses(request, response_format = 'json'):
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_resetpasses(request, response_format)
+    return admin_resetpasses(response_format)
 
 
 @api_view(['POST'])
@@ -51,7 +51,7 @@ def api_admin_resetstations(request, response_format = 'json'):
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_resetstations(request, response_format)
+    return admin_resetstations(response_format)
 
 
 @api_view(['POST'])
@@ -61,7 +61,7 @@ def api_admin_resetvehicles(request, response_format = 'json'):
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_resetvehicles(request, response_format)
+    return admin_resetvehicles(response_format)
 
 
 class ApiLoginView(LoginView):
