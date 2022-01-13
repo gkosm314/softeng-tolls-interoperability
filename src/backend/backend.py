@@ -3,19 +3,14 @@ from django.db import transaction, connection
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from .models import Pass, Payment, Provider, Station, Vehicle
 import csv
 from datetime import datetime
 from .serializers import PassSerializer, StationSerializer
 from rest_framework import generics
 from django.db.models import Sum
-from .permissions import UserBelongsToProviderGroup
 
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
@@ -25,6 +20,7 @@ stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
 vehicles_csv_path = 'backend/sample_data/sampledata01_vehicles_100.csv'
 providers_csv_path = 'backend/sample_data/sampledata01_providers.csv'
 passes_csv_path = 'backend/sample_data/sampledata01_passes100_8000.csv'
+
 
 def all_stations_invalid():
     """
@@ -118,10 +114,9 @@ def update_pass_from_csv_line(row):
     new_pass.save()
 
 
-@api_view(['POST'])
-def admin_hardreset(request, response_format = 'json'):
+def admin_hardreset(response_format = 'json'):
     """
-    Implements /admin/hardreset API call. Admin authentication required.
+    Implements /admin/hardreset API call.
     Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
 
     Important note: this API call takes a lot of time to finish, since it inserts over 30000 passes in the database
@@ -195,10 +190,9 @@ def admin_hardreset(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def admin_healthcheck(request, response_format = 'json'):
+def admin_healthcheck(response_format = 'json'):
     """
-    Implements /admin/healthcheck API call. Admin authentication required.
+    Implements /admin/healthcheck API call.
     Ensures that we are connected to the database.
     """
 
@@ -209,7 +203,6 @@ def admin_healthcheck(request, response_format = 'json'):
         return Response({"status": "failed", "dbconnection": connection_string}, status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
         return Response({"status": "OK", "dbconnection": connection_string}, status.HTTP_200_OK)
-
 
 
 def initialize_super_user():
@@ -229,11 +222,10 @@ def initialize_super_user():
     new_superuser.save()
 
 
-@api_view(['POST'])
-def admin_resetpasses(request, response_format = 'json'):
+def admin_resetpasses(response_format = 'json'):
     """
-    Implements /admin/resetpasses API call. Admin authentication required.
-    Deletes all Pass entries from the database and initializes a unique superuser
+    Implements /admin/resetpasses API call.
+    Deletes all Pass entries from the database,deletes all superusers and initializes a unique superuser.
     """
 
     try:
@@ -249,10 +241,9 @@ def admin_resetpasses(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-def admin_resetstations(request, response_format = 'json'):
+def admin_resetstations(response_format = 'json'):
     """
-    Implements /admin/resetstations API call. Admin authentication required.
+    Implements /admin/resetstations API call.
     Marks all Station entries as invalid and then enters all the station in the sample data as valid stations.
     """
 
@@ -277,10 +268,9 @@ def admin_resetstations(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-def admin_resetvehicles(request, response_format = 'json'):
+def admin_resetvehicles(response_format = 'json'):
     """
-    Implements /admin/resetvehicles API call. Admin authentication required.
+    Implements /admin/resetvehicles API call.
     Marks all Vehicle entries as invalid and then enters all the vehicles in the sample data as valid vehicles.
     """
 
@@ -305,12 +295,13 @@ def admin_resetvehicles(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+class LoginView(ObtainAuthToken):
+    pass
+
+
 def logout_view(request, response_format = 'json'):
     """
-    Implements logout by deleting token
+    Performs user logout by making the user's token invalid.
     """
 
     try:
@@ -318,7 +309,7 @@ def logout_view(request, response_format = 'json'):
     except (AttributeError):
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    logout(request)	#django built-in logout (django.contrib.auth)
+    logout(request) #django built-in logout (django.contrib.auth)
     return Response(status=status.HTTP_200_OK)
 
 
@@ -326,9 +317,8 @@ class PassesPerStation(generics.ListAPIView):
     """
     Return a list with all the passes for a given stationID and date range
     """
+
     serializer_class = PassSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -377,9 +367,8 @@ class PassesAnalysis(generics.ListAPIView):
 
         Assuming op1_ID and op2_ID are the providerAbbr fields
     """
+
     serializer_class = PassSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -450,8 +439,6 @@ class PassesCost(generics.ListAPIView):
     """
 
     serializer_class = PassSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -516,9 +503,8 @@ class ChargesBy(generics.GenericAPIView):
     """
         Return the amount each operator owes to the provided op_ID for a given period of time
     """
+
     serializer_class = PassSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, UserBelongsToProviderGroup]
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_costs_between_operators(self, op1_abbr, op2_abbr, date_from, date_to):

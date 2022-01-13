@@ -1,5 +1,5 @@
 from rest_framework import permissions
-from .models import Provider, Station
+from backend.models import Provider, Station
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -22,7 +22,7 @@ class UserBelongsToProviderGroup(permissions.BasePermission):
     This is a design choice and should be documented and can be changed if required
     """
 
-    message = "The user doesn't belong to the correct group for this provider"
+    message = "Permission denied: The user doesn't belong to the correct group for this provider"
 
     def has_permission(self, request, view):
         user = request.user
