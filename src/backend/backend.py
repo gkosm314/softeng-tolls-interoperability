@@ -114,7 +114,7 @@ def update_pass_from_csv_line(row):
     new_pass.save()
 
 
-def admin_hardreset(request, response_format = 'json'):
+def admin_hardreset(response_format = 'json'):
     """
     Implements /admin/hardreset API call.
     Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
@@ -190,7 +190,7 @@ def admin_hardreset(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-def admin_healthcheck(request, response_format = 'json'):
+def admin_healthcheck(response_format = 'json'):
     """
     Implements /admin/healthcheck API call.
     Ensures that we are connected to the database.
@@ -222,7 +222,7 @@ def initialize_super_user():
     new_superuser.save()
 
 
-def admin_resetpasses(request, response_format = 'json'):
+def admin_resetpasses(response_format = 'json'):
     """
     Implements /admin/resetpasses API call.
     Deletes all Pass entries from the database,deletes all superusers and initializes a unique superuser.
@@ -241,7 +241,7 @@ def admin_resetpasses(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-def admin_resetstations(request, response_format = 'json'):
+def admin_resetstations(response_format = 'json'):
     """
     Implements /admin/resetstations API call.
     Marks all Station entries as invalid and then enters all the station in the sample data as valid stations.
@@ -268,7 +268,7 @@ def admin_resetstations(request, response_format = 'json'):
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
 
-def admin_resetvehicles(request, response_format = 'json'):
+def admin_resetvehicles(response_format = 'json'):
     """
     Implements /admin/resetvehicles API call.
     Marks all Vehicle entries as invalid and then enters all the vehicles in the sample data as valid vehicles.
