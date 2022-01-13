@@ -3,7 +3,8 @@
 #Otherwise, the import will fail, because the import of any django module requires the changes made by django_settings_setup().
 #As a rule of thumb, import everything inside __main_ at the end of the file, except python build-in modules.
 #Warning: Do not remove "import os, sys, pathlib" from the top of the file. They are required for the successful execution of django_settings_setup
-import argparse, os, sys, pathlib 
+import argparse, os, sys, pathlib
+from datetime import datetime
 
 def django_settings_setup():
 	"""
