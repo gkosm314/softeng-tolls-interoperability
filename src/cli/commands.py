@@ -65,7 +65,13 @@ def cli_admin_resetvehicles(args):
 
 
 def cli_login(args):
-    pass
+    factory = RequestFactory()
+    request_path = "/interoperability/api/login/"
+    request_data = {'username': args.username, 'password': args.passw}
+    request = factory.post(request_path, request_data)
+
+    response = LoginView.as_view()(request)
+    print(response.data)
 
 
 def cli_passesperstation(args):
