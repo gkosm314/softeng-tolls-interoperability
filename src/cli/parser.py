@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #All imports that use any django feature should be imported in __main__ at the end of this file.
 #The import should be placed after the invocation of django_settings_setup.
 #Otherwise, the import will fail, because the import of any django module requires the changes made by django_settings_setup().
