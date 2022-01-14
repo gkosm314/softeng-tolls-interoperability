@@ -112,7 +112,7 @@ def setup_main_parser():
 	for subparser in [passesanalysis_parser, passescost_parser, chargesby_parser]:
 		subparser.add_argument('--op1', required = True, help = "abbreviation of operator 1. examples: KO, AO, OO...")
 
-	for subparser in [passesanalysis_parser, chargesby_parser]:
+	for subparser in [passesanalysis_parser, passescost_parser]:
 		subparser.add_argument('--op2', required = True, help = "abbreviation of operator 2. examples: KO, AO, OO...")
 
 	for subparser in [passesperstation_parser, passesanalysis_parser, passescost_parser, chargesby_parser]:
