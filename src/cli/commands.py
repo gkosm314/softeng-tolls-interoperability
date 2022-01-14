@@ -6,8 +6,11 @@ import csv
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.test import RequestFactory
+
 from backend.backend import update_pass_from_csv_line
 from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles, logout_view
+from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView
 
 
 #Helper functions
@@ -66,19 +69,38 @@ def cli_login(args):
 
 
 def cli_passesperstation(args):
-    pass
+    factory = RequestFactory()
+    request_path = f"/interoperability/api/PassesPerStation/{args.station}/{args.datefrom}/{args.dateto}"
+    request = factory.get(request_path)
 
+    response = PassesPerStation.as_view()(request, stationID = args.station, datefrom = args.datefrom, dateto = args.dateto)
+    print(response.data)
 
 def cli_passesanalysis(args):
-    pass
+    factory = RequestFactory()
+    request_path = f"/interoperability/api/PassesAnalysis/{args.op1}/{args.op2}/{args.datefrom}/{args.dateto}"
+    request = factory.get(request_path)
+    
+    response = PassesAnalysis.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto)
+    print(response.data)
 
 
 def cli_passescost(args):
-    pass
+    factory = RequestFactory()
+    request_path = f"/interoperability/api/PassesCost/{args.op1}/{args.op2}/{args.datefrom}/{args.dateto}"
+    request = factory.get(request_path)
+    
+    response = PassesCost.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto)
+    print(response.data)
 
 
 def cli_chargesby(args):
-    pass
+    factory = RequestFactory()
+    request_path = f"/interoperability/api/ChargesBy/{args.op1}/{args.datefrom}/{args.dateto}"
+    request = factory.get(request_path)
+    
+    response = ChargesBy.as_view()(request, op_ID = args.op1, datefrom = args.datefrom, dateto = args.dateto)
+    print(response.data)
 
 
 def cli_admin_usermod(args):
