@@ -299,18 +299,8 @@ class LoginView(TokenObtainPairView):
     pass
 
 
-def logout_view(request, response_format = 'json'):
-    """
-    Performs user logout by making the user's token invalid.
-    """
-
-    try:
-        request.user.auth_token.delete() # simply delete the token to force a login
-    except (AttributeError):
-        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    logout(request) #django built-in logout (django.contrib.auth)
-    return Response(status=status.HTTP_200_OK)
+class RefreshView(TokenRefreshView):
+    pass
 
 
 class PassesPerStation(generics.ListAPIView):

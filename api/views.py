@@ -8,8 +8,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework import generics
 from .permissions import UserBelongsToProviderGroup
 
-from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles, logout_view
-from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView
+from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles
+from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView, RefreshView
 
 
 @api_view(['POST'])
@@ -73,13 +73,11 @@ class ApiLoginView(LoginView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def api_logout_view(request, response_format = 'json'):
+class ApiRefreshView(RefreshView):
     """
-	Performs user logout by making the user's token invalid.
+    Refreshes the lifetime of a token.
     """
-
-    return logout_view(request, response_format)
+    pass
 
 
 api_permissions = [IsAuthenticated, UserBelongsToProviderGroup]
@@ -92,7 +90,6 @@ class ApiPassesPerStation(PassesPerStation):
     
     #Checks permissions and calls equivelant API call from backend/backend.py
 
-
     permission_classes = api_permissions
 
 
@@ -103,7 +100,6 @@ class ApiPassesAnalysis(PassesAnalysis):
     """
     
     #Checks permissions and calls equivelant API call from backend/backend.py
-
 
     permission_classes = api_permissions
 
@@ -116,7 +112,6 @@ class ApiPassesCost(PassesCost):
     
     #Checks permissions and calls equivelant API call from backend/backend.py
 
-
     permission_classes = api_permissions
 
 
@@ -126,6 +121,5 @@ class ApiChargesBy(ChargesBy):
     """
     
     #Checks permissions and calls equivelant API call from backend/backend.py
-
 
     permission_classes = api_permissions
