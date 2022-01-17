@@ -73,7 +73,6 @@ class ApiLoginView(LoginView):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def api_logout_view(request, response_format = 'json'):
     """
@@ -83,7 +82,6 @@ def api_logout_view(request, response_format = 'json'):
     return logout_view(request, response_format)
 
 
-api_authentication = [TokenAuthentication]
 api_permissions = [IsAuthenticated, UserBelongsToProviderGroup]
 
 
@@ -94,7 +92,7 @@ class ApiPassesPerStation(PassesPerStation):
     
     #Checks permissions and calls equivelant API call from backend/backend.py
 
-    authentication_classes = api_authentication
+
     permission_classes = api_permissions
 
 
@@ -106,7 +104,7 @@ class ApiPassesAnalysis(PassesAnalysis):
     
     #Checks permissions and calls equivelant API call from backend/backend.py
 
-    authentication_classes = api_authentication
+
     permission_classes = api_permissions
 
 
@@ -118,7 +116,7 @@ class ApiPassesCost(PassesCost):
     
     #Checks permissions and calls equivelant API call from backend/backend.py
 
-    authentication_classes = api_authentication
+
     permission_classes = api_permissions
 
 
@@ -129,5 +127,5 @@ class ApiChargesBy(ChargesBy):
     
     #Checks permissions and calls equivelant API call from backend/backend.py
 
-    authentication_classes = api_authentication
+
     permission_classes = api_permissions
