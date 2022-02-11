@@ -1,0 +1,20 @@
+Usage:
+   se2155 admin --usermod [--username USERNAME] [--passw PASSW]
+   se2155 admin --users [username]
+   se2155 admin --passesupd [--source SOURCE]
+
+Available admin actions:
+  -h, --help           prints help message
+  --usermod            changes password of existing user or creates a new user
+  --users              prints info about a specific user
+  --passesupd          uploads new passes  
+
+Required arguments for --usermod:
+  --username USERNAME  username of the user whose password we want to change
+  --passw PASSW        new password (no spaces allowed)
+
+Required arguments for --users:
+   username             username of user whose information will be printed 
+
+Required arguments for --passesupd:
+  --source SOURCE      path to csv file
