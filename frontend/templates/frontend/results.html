@@ -1,0 +1,22 @@
+{% extends "frontend/index.html" %}
+
+{% block info_message %}
+<div class="col-12">
+	<div class="alert alert-info text-center" role="alert">
+		<i class="bi bi-bar-chart-line-fill"></i> | 
+		You are viewing statistics for the provider <strong>{{ provider_name_var }}</strong> during the period from <strong>{{ date_from_var }} </strong>to <strong>{{ date_to_var }}</strong>.
+	</div>
+</div>
+{% endblock info_message %}	
+
+
+{% block results %}
+<div class="row align-items-center">
+	<div class="col-8 p-3">
+		<div class="fw-lighter fs-3 mb-3 border-bottom">Passes Per Station</div>
+	</div>
+	<div class="col-4 p-3">
+		<div class="fw-lighter fs-3 mb-3 border-bottom">"Is-Home" Statistics</div>
+	</div>
+</div>	
+{% endblock results %}	
