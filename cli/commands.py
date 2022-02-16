@@ -1,7 +1,7 @@
 from datetime import datetime
 from argparse import ArgumentTypeError
 from pathlib import Path
-from os.path import join, isfile, abspath, splitext
+from os.path import join, isfile, abspath, splitext, isdir, split
 import csv
 
 from django.contrib.auth.models import User
@@ -9,12 +9,43 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.test import RequestFactory
 
 from backend.backend import update_pass_from_csv_line
-from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles, logout_view
+from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles
 from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView
 
 
 #Helper functions
 #These functions are called by the main functions (below)
+def output_response_data(response_data, format, output_path_parameter):
+    """
+    Print the data returned to us by the backend.
+    """
+
+    #Check if we want to print the result at the standard output
+    if output_path_parameter == "stdout":
+        print(response_data)
+    
+    #Otherwise:
+    else:
+        #Convert parameter to absolute path, in case it is a relative path.
+        output_path = abspath(output_path_parameter)
+        
+        #Find the extension of the filename
+        dir, basename = split(output_path)
+
+        #Check if the direcory exists.
+        if not isdir(dir):
+            print(f"Error: Directory {dir} does not exist.")
+            return False
+
+        if isfile(output_path):
+            if input(f"Warning: File {output_path} already exists. Enter 'Y' to overwrite it.\n") != 'Y':
+                return False
+
+        with open(output_path,"w+") as f:
+            print(response_data, file = f)
+
+    return True
+
 def cli_create_user(username, password):
     """
     Create new user with the given username and set his password to be the given password
@@ -49,19 +80,19 @@ def cli_change_password(user_object, username, password):
 #Main functions
 #These functions are called by parser.py
 def cli_admin_healthcheck(args):
-    print(admin_healthcheck(args.format).data)
+    return output_response_data(admin_healthcheck(args.format).data, args.format, args.output)
     
 
 def cli_admin_resetpasses(args):
-    print(admin_resetpasses(args.format).data)
+    return output_response_data(admin_resetpasses(args.format).data, args.format, args.output)
  
 
 def cli_admin_resetstations(args):
-    print(admin_resetstations(args.format).data)
+    return output_response_data(admin_resetstations(args.format).data, args.format, args.output)
 
 
 def cli_admin_resetvehicles(args):
-    print(admin_resetvehicles(args.format).data)
+    return output_response_data(admin_resetvehicles(args.format).data, args.format, args.output)
 
 
 def cli_login(args):
@@ -71,7 +102,7 @@ def cli_login(args):
     request = factory.post(request_path, request_data)
 
     response = LoginView.as_view()(request)
-    print(response.data)
+    return output_response_data(response.data, args.format, args.output)
 
 
 def cli_passesperstation(args):
@@ -80,7 +111,7 @@ def cli_passesperstation(args):
     request = factory.get(request_path)
 
     response = PassesPerStation.as_view()(request, stationID = args.station, datefrom = args.datefrom, dateto = args.dateto)
-    print(response.data)
+    return output_response_data(response.data, args.format, args.output)
 
 def cli_passesanalysis(args):
     factory = RequestFactory()
@@ -88,7 +119,7 @@ def cli_passesanalysis(args):
     request = factory.get(request_path)
     
     response = PassesAnalysis.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto)
-    print(response.data)
+    return output_response_data(response.data, args.format, args.output)
 
 
 def cli_passescost(args):
@@ -97,7 +128,7 @@ def cli_passescost(args):
     request = factory.get(request_path)
     
     response = PassesCost.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto)
-    print(response.data)
+    return output_response_data(response.data, args.format, args.output)
 
 
 def cli_chargesby(args):
@@ -106,7 +137,7 @@ def cli_chargesby(args):
     request = factory.get(request_path)
     
     response = ChargesBy.as_view()(request, op_ID = args.op1, datefrom = args.datefrom, dateto = args.dateto)
-    print(response.data)
+    return output_response_data(response.data, args.format, args.output)
 
 
 def cli_admin_usermod(args):
@@ -189,7 +220,7 @@ def cli_admin_help():
     """
 
     try:
-        help_msg_file_path = join(pathlib.Path(__file__).parent.resolve(), 'admin_subcommand_help_message.txt')
+        help_msg_file_path = join(Path(__file__).parent.resolve(), 'admin_subcommand_help_message.txt')
         help_msg_file = open(help_msg_file_path,'r')
         help_msg = help_msg_file.read()
     except Exception as e:
