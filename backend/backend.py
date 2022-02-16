@@ -5,7 +5,7 @@ from django.contrib.auth import logout
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .models import Pass, Payment, Provider, Station, Vehicle
+from .models import Pass, Provider, Station, Vehicle
 import csv
 from datetime import datetime
 from .serializers import PassSerializer, StationSerializer
@@ -128,7 +128,6 @@ def admin_hardreset(response_format = 'json'):
         Station.objects.all().delete()
         Vehicle.objects.all().delete()
         Pass.objects.all().delete()
-        Payment.objects.all().delete()
 
         #Insert providers
         with open(providers_csv_path) as csv_file:

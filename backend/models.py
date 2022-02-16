@@ -21,17 +21,6 @@ class Pass(models.Model):
         db_table = 'Passes'
 
 
-class Payment(models.Model):
-    transactionid = models.AutoField(db_column='transactionID', primary_key=True)
-    providercreditedid = models.ForeignKey('Provider', models.CASCADE, db_column='providerCreditedID', related_name = 'provider_credited_id')  
-    providerdebitedid = models.ForeignKey('Provider', models.CASCADE, db_column='providerDebitedID', related_name = 'provider_debited_id')  
-    amount = models.IntegerField()
-    status = models.CharField(max_length=10)
-
-    class Meta:
-        db_table = 'Payments'
-
-
 class Provider(models.Model):
     providerid = models.AutoField(db_column='providerID', primary_key=True)
     providername = models.CharField(db_column='providerName', unique=True, max_length=20)
