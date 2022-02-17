@@ -17,3 +17,4 @@ search_button.addEventListener('click', event => {
 home_button.addEventListener('click', event => {
 	window.location.href = base_url;
 });
+
