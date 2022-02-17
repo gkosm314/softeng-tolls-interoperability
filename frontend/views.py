@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from backend.models import *
 from random import randint
+from datetime import datetime
 
 def statistics_home(request):
 
@@ -16,7 +17,7 @@ def statistics_dashboard(request, **kwargs):
 
     providers_options_dict = get_providers_names()
 
-    if not kwargs['provider_Abbr'] in providers_options_dict:
+    if not valid_search_url(providers_options_dict, **kwargs):
         context = {'providers_options': providers_options_dict}
         return render(request, 'frontend/error.html', context)
 
@@ -84,6 +85,7 @@ def count_passes_from_each_provider(my_provider_parameter, date_from, date_to):
 
     return (passes_per_provider,total_passes_counter)
 
+
 def random_rgb_color_generator(n):
 
     list_with_rgb_strings = []
@@ -95,3 +97,18 @@ def random_rgb_color_generator(n):
         list_with_rgb_strings.append(f'rgb({random_a}, {random_b}, {random_c})')
 
     return list_with_rgb_strings
+
+
+def valid_search_url(providers_options_dict_parameter, **kwargs):
+
+    if not kwargs['provider_Abbr'] in providers_options_dict_parameter:
+        return False
+
+    try:
+        datetime.strptime(kwargs['dateto'], "%Y-%m-%d")
+        datetime.strptime(kwargs['datefrom'], "%Y-%m-%d")
+    except ValueError as e:
+        print(e)
+        return False
+    else:
+        return True
