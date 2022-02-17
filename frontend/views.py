@@ -31,6 +31,7 @@ def statistics_dashboard(request, **kwargs):
     context = {
         'providers_options': providers_options_dict,
         'provider_name_var': providers_options_dict[kwargs['provider_Abbr']],
+        'provider_name_abbr': kwargs['provider_Abbr'],
         'date_from_var': kwargs['datefrom'],
         'date_to_var': kwargs['dateto'],
         'stations_labels_list_str': stations_labels_list,

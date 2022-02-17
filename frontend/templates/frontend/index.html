@@ -29,22 +29,24 @@
 				<div class="input-group mb-3">
 				  	<label class="input-group-text fw-light" for="select_provider_input">Provider:</label>
 					<select class="form-select form-select-lg" id="select_provider_input">
-					    {% for i in providers_options.keys %}
-					    	<option value="{{ i }}">{{ i }}</option>
-						{% endfor %}
+						{% block provider_select_value %}
+						    {% for i in providers_options.keys %}
+						    	<option value="{{ i }}">{{ i }}</option>
+							{% endfor %}
+						{% endblock provider_select_value %}	
 				  	</select>
 				</div>
 			</div>
 			<div class="col-5">
 				<div class="input-group mb-3">
 				  	<label class="input-group-text fw-light" for="date_for_input">From:</label>
-				  	<input class="form-control form-control-lg" type="date" value="2021-01-01" id="date_from_input">
+				  	<input class="form-control form-control-lg" type="date" value="{% block date_from_value%}2022-01-01{% endblock %}" id="date_from_input">
 				</div>		
 			</div>
 			<div class="col-5">
 				<div class="input-group mb-3">
 				  	<label class="input-group-text fw-light" for="date_to_input">Until:</label>
-				  	<input class="form-control form-control-lg" type="date" value="2022-01-01" id="date_to_input">
+				  	<input class="form-control form-control-lg" type="date" value="{% block date_to_value %}2022-01-01{% endblock %}" id="date_to_input">
 				</div>						
 			</div>
 

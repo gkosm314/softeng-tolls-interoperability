@@ -1,5 +1,19 @@
 {% extends "frontend/index.html" %}
 
+{% block provider_select_value %}
+    {% for i in providers_options.keys %}
+    	{% if i == provider_name_abbr %}
+    		<option value="{{ i }}" selected>{{ i }}</option>
+    	{% else %}
+		    <option value="{{ i }}">{{ i }}</option>
+		{% endif %}	
+	{% endfor %}
+{% endblock provider_select_value %}
+
+{% block date_from_value%}{{date_from_var}}{% endblock %}
+
+{% block date_to_value %}{{date_to_var}}{% endblock %}
+
 {% block info_message %}
 <div class="col-12">
 	<div class="alert alert-info text-center" role="alert">
