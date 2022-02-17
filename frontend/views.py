@@ -2,8 +2,6 @@ from django.shortcuts import render
 from backend.models import *
 from random import randint
 
-import timeit
-
 def statistics_home(request):
 
     providers_options_dict = get_providers_names()
@@ -15,8 +13,6 @@ def statistics_home(request):
 
 
 def statistics_dashboard(request, **kwargs):
-
-    start = timeit.default_timer()
 
     providers_options_dict = get_providers_names()
 
@@ -45,9 +41,6 @@ def statistics_dashboard(request, **kwargs):
         'pie_data_list_str': pie_data_list,
         'pie_bg_colors_list_str': random_rgb_color_generator(len(pie_labels_list)),
     }
-
-    stop = timeit.default_timer()
-    print('Time: ', stop - start)  
     
     return render(request, 'frontend/results.html', context)
 
@@ -72,18 +65,17 @@ def count_passes_per_station(my_provider_parameter, date_from, date_to):
 
 def count_passes_from_each_provider(my_provider_parameter, date_from, date_to):
 
-    passes_per_provider = {prov.providerabbr:0 for prov in Provider.objects.all()}
-
     #QuerySet which contains all the Passes from the stations owned by provider_abbr_parameter
     my_provider_id = Provider.objects.get(providerabbr = my_provider_parameter).providerid
+    qs_providers = Provider.objects.all()
     qs_passes = Pass.objects.filter(providerabbr = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
 
-    passes_per_provider[my_provider_parameter] = qs_passes.filter(ishome=1).count()
+    passes_per_provider = {prov.providerabbr:0 for prov in qs_providers}
+    total_passes_counter = 0
 
-    total_passes_counter = passes_per_provider[my_provider_parameter]
-    for p in qs_passes.exclude(ishome=1):
-        passes_per_provider[p.vehicleref.providerabbr.providerabbr] += 1
-        total_passes_counter += 1
+    for p in qs_providers:
+        passes_per_provider[p.providerabbr] = qs_passes.filter(vehicleref__providerabbr__providerabbr = p.providerabbr).count()
+        total_passes_counter += passes_per_provider[p.providerabbr]
 
     for k,v in passes_per_provider:
         if v == 0:
