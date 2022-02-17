@@ -18,3 +18,12 @@ home_button.addEventListener('click', event => {
 	window.location.href = base_url;
 });
 
+const search_form = document.getElementById('search_form');
+
+search_form.addEventListener('mouseover', event => {
+	search_form.classList.remove("shadow-sm");
+});
+
+search_form.addEventListener('mouseout', event => {
+	search_form.classList.add("shadow-sm");
+});

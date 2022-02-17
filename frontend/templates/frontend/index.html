@@ -3,25 +3,30 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>MyTolls - Statistics Viewer</title>
+	<title>tolls-interoperability - Statistics</title>
 
 	{% load static %}
 	<link href="{% static 'frontend/css/bootstrap.min.css' %}" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-	<link rel="icon" type="image/x-icon" href="{% static 'frontend/img/tolls_icon.png' %}">
+	<link rel="icon" type="image/x-icon" href="{% static 'frontend/img/car-32.ico' %}">
+	<style type="text/css">
+		#home_button:hover {
+		  opacity: 90%;
+		}
+	</style>
 </head>
 <body>
 
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
 	  <div class="container-fluid">
-	    <a class="navbar-brand" href="#" id="home_button">
-	      tolls-interoperability
+	    <a class="navbar-brand fw-lighter" href="#" id="home_button">
+	    	<img id="tolls_logo" src="{% static 'frontend/img/car-512.png' %}" width="32" height="32"> | tolls-interoperability
 	    </a>
 	  </div>
 	</nav>
 
 	<div class="container">
-		<form class="row align-items-center rounded bg-body p-3 mt-4 shadow-sm border"> 
+		<form class="row align-items-center rounded bg-body p-3 mt-4 shadow-sm border" id="search_form"> 
 
 			<div class="fw-lighter fs-3 mb-3 border-bottom">Search</div>
 
