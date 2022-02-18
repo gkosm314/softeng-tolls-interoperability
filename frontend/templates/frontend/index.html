@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>tolls-interoperability - Statistics</title>
+
+	{% load static %}
+	<link href="{% static 'frontend/css/bootstrap.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+	<link rel="icon" type="image/x-icon" href="{% static 'frontend/img/car-32.ico' %}">
+	<style type="text/css">
+		#home_button:hover {
+		  opacity: 90%;
+		}
+	</style>
+</head>
+<body>
+
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+	  <div class="container-fluid">
+	    <a class="navbar-brand fw-lighter" href="#" id="home_button">
+	    	<img id="tolls_logo" src="{% static 'frontend/img/car-512.png' %}" width="32" height="32"> | tolls-interoperability
+	    </a>
+	  </div>
+	</nav>
+
+	<div class="container">
+		<form class="row align-items-center rounded bg-body p-3 mt-4 shadow-sm border" id="search_form"> 
+
+			<div class="fw-lighter fs-3 mb-3 border-bottom">Search</div>
+
+			<div class="col-2">
+				<div class="input-group mb-3">
+				  	<label class="input-group-text fw-light" for="select_provider_input">Provider:</label>
+					<select class="form-select form-select-lg" id="select_provider_input">
+						{% block provider_select_value %}
+						    {% for i in providers_options.keys %}
+						    	<option value="{{ i }}">{{ i }}</option>
+							{% endfor %}
+						{% endblock provider_select_value %}	
+				  	</select>
+				</div>
+			</div>
+			<div class="col-5">
+				<div class="input-group mb-3">
+				  	<label class="input-group-text fw-light" for="date_for_input">From:</label>
+				  	<input class="form-control form-control-lg" type="date" value="{% block date_from_value%}2022-01-01{% endblock %}" id="date_from_input">
+				</div>		
+			</div>
+			<div class="col-5">
+				<div class="input-group mb-3">
+				  	<label class="input-group-text fw-light" for="date_to_input">Until:</label>
+				  	<input class="form-control form-control-lg" type="date" value="{% block date_to_value %}2022-01-01{% endblock %}" id="date_to_input">
+				</div>						
+			</div>
+
+			<div class="d-grid gap-2">
+			  <button class="btn btn-lg btn-dark" type="button" id="view_statistics_button">View Statistics</button>
+			</div>
+
+		</form>
+
+		<div class="row align-items-center mt-4">
+			{% block info_message %}
+			<div class="col-12">
+				<div class="alert alert-secondary text-center" role="alert">
+					<i class="bi bi-info-circle-fill"></i> | Use the form to search for statistical information.
+				</div>
+			</div>
+			{% endblock info_message %}	
+		</div>	
+	
+		{% block results %}
+		{% endblock results %}	
+
+	</div>
+
+	<script src="{% static 'frontend/js/bootstrap.bundle.min.js' %}"></script>
+	<script src="{% static 'frontend/js/jquery.js' %}"></script>
+	<script src="{% static 'frontend/js/script.js' %}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	{% block chartjs_script %}
+	{% endblock chartjs_script %}	
+</body>
+</html>

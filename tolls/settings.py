@@ -31,7 +31,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'backend.apps.BackendConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_spectacular',
+    'api.apps.ApiConfig',
+    'frontend.apps.FrontendConfig',
+    'backend.apps.BackendConfig',
 ]
 
 MIDDLEWARE = [

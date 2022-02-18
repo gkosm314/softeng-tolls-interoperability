@@ -1,0 +1,104 @@
+{% extends "frontend/index.html" %}
+
+{% block provider_select_value %}
+    {% for i in providers_options.keys %}
+    	{% if i == provider_name_abbr %}
+    		<option value="{{ i }}" selected>{{ i }}</option>
+    	{% else %}
+		    <option value="{{ i }}">{{ i }}</option>
+		{% endif %}	
+	{% endfor %}
+{% endblock provider_select_value %}
+
+{% block date_from_value%}{{date_from_var}}{% endblock %}
+
+{% block date_to_value %}{{date_to_var}}{% endblock %}
+
+{% block info_message %}
+<div class="col-12">
+	<div class="alert alert-info text-center" role="alert">
+		<i class="bi bi-bar-chart-line-fill"></i> | 
+		You are viewing statistics for the provider <strong>{{ provider_name_var }}</strong> during the period from <strong>{{ date_from_var }} </strong>to <strong>{{ date_to_var }}</strong>.
+	</div>
+</div>
+{% endblock info_message %}	
+
+
+{% block results %}
+<div class="row align-items-center mt-2">
+	<div class="col-8">
+		<div class="fw-lighter fs-3 mb-3 border-bottom">Stations Analysis</div>	
+	</div>
+	<div class="col-4">
+		<div class="fw-lighter fs-3 mb-3 border-bottom">
+			Total Passes: {{total_passes}}
+		</div>	
+	</div>
+</div>	
+
+<div class="row align-items-center">
+	<div class="col-8 p-1">
+		<div class="passes_per_station_div">
+			<canvas id="passes_per_station_chart"></canvas>
+		</div>		
+	</div>
+	<div class="col-4 p-1">
+		<div class="is_home_statistics_div">
+			<canvas id="is_home_chart"></canvas>
+		</div>		
+	</div>
+</div>	
+{% endblock results %}	
+
+{% block chartjs_script %}
+
+<script type="text/javascript">
+
+	const stations_chart_data = {
+	  labels: {{ stations_labels_list_str|safe }},
+	  datasets: [{
+	  	label: '',
+	    data: {{ stations_data_list_str|safe }},
+	    backgroundColor: {{ stations_bg_colors_list_str|safe }},
+	    borderWidth: 1
+	  }]
+	};
+
+	const stations_chart_config = {
+	  type: 'bar',
+	  data: stations_chart_data,
+	  options: {
+	    scales: {
+	      y: {
+	        beginAtZero: true
+	      }	
+	    },
+	    plugins:{
+			legend: {
+				display: false
+  	 		}
+  		}
+	  },
+	};
+
+	const stations_chart = new Chart(document.getElementById('passes_per_station_chart'), stations_chart_config);
+
+	const pie_chart_data = {
+	  labels: {{ pie_labels_list_str|safe }},
+	  datasets: [{
+	    label: 'Is-Home Statistics',
+	    data: {{ pie_data_list_str|safe }},
+	    backgroundColor: {{ pie_bg_colors_list_str|safe }},
+	    hoverOffset: 4
+	  }]
+	};
+
+	const pie_chart_config = {
+	  type: 'doughnut',
+	  data: pie_chart_data,
+	};
+
+	const pie_chart = new Chart(document.getElementById('is_home_chart'), pie_chart_config);
+</script>
+
+{% endblock chartjs_script %}	
