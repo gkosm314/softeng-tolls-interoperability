@@ -132,6 +132,7 @@ def setup_main_parser():
 	#format argument for all the commands except the admin action commands
 	for subparser in cli_subparsers_list:
 		subparser.add_argument('--format', choices = ['json', 'csv'] , required = True, help = "output format")
+		subparser.add_argument('--output', default = "stdout" , help = "output path (default output = stdout)")
 
 	return (cli_parser, admin_actions_parser)
 

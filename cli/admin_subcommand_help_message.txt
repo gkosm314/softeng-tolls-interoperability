@@ -12,9 +12,15 @@ Available admin actions:
 Required arguments for --usermod:
   --username USERNAME  username of the user whose password we want to change
   --passw PASSW        new password (no spaces allowed)
+  --format {json,csv}  output format
+  --output OUTPUT      output path (default output = stdout)  
 
 Required arguments for --users:
    username             username of user whose information will be printed 
+  --format {json,csv}  output format
+  --output OUTPUT      output path (default output = stdout)
 
 Required arguments for --passesupd:
   --source SOURCE      path to csv file
+  --format {json,csv}  output format
+  --output OUTPUT      output path (default output = stdout)
