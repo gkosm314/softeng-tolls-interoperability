@@ -1,3 +1,5 @@
+from dataclasses import fields
+from unicodedata import name
 from django.shortcuts import render
 from django.db import transaction, connection
 from django.contrib.auth.models import User
@@ -9,9 +11,11 @@ from .models import Pass, Provider, Station, Vehicle
 import csv
 from datetime import datetime
 from .serializers import PassSerializer, StationSerializer
-from rest_framework import generics
+from rest_framework import generics, serializers
 from django.db.models import Sum
+from . import examples
 
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
 
@@ -128,6 +132,7 @@ def admin_hardreset(response_format = 'json'):
         Station.objects.all().delete()
         Vehicle.objects.all().delete()
         Pass.objects.all().delete()
+        Payment.objects.all().delete()
 
         #Insert providers
         with open(providers_csv_path) as csv_file:
@@ -349,6 +354,47 @@ class PassesPerStation(generics.ListAPIView):
         }
         return Response(response_data)
 
+    @extend_schema (
+        responses={
+            200: inline_serializer(
+               name='PassesPerStation_200',
+               fields= {
+                'Station': serializers.CharField(),
+                'StationOperator': serializers.CharField(),
+                'RequestTimestamp': serializers.DateTimeField(),
+                'PeriodFrom': serializers.DateTimeField(),
+                'PeriodTo':  serializers.DateTimeField(),
+                'NumberOfPasses': serializers.IntegerField(),
+                'PassesList': PassSerializer()
+               }
+            ),
+            400: inline_serializer(
+                name='PassesPerStation_400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+        },
+        examples=[
+            OpenApiExample(
+            "Status code 200",
+            description="An example of a successful endpoint call",
+            value=examples.ourdict["PassesPerStation"],
+            response_only=True,
+            status_codes=["200"],
+            ),
+            OpenApiExample(
+            "Status code 400",
+            description="An example of a failed endpoint call",
+            value={"status": "failed"},
+            response_only=True,
+            status_codes=["400"],
+            )
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
 
 class PassesAnalysis(generics.ListAPIView):
     """
@@ -415,6 +461,47 @@ class PassesAnalysis(generics.ListAPIView):
         }
         return Response(response_data)
 
+    @extend_schema (
+        responses={
+            200: inline_serializer(
+               name='PassesAnalysis_200',
+               fields= {
+                'op1_ID': serializers.CharField(),
+                'op2_ID': serializers.CharField(),
+                'RequestTimestamp': serializers.DateTimeField(),
+                'PeriodFrom': serializers.DateTimeField(),
+                'PeriodTo':  serializers.DateTimeField(),
+                'NumberOfPasses': serializers.IntegerField(),
+                'PassesList': PassSerializer()
+               }
+            ),
+            400: inline_serializer(
+                name='PassesAnalysis_400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+        },
+        examples=[
+            OpenApiExample(
+            "Status code 200",
+            description="An example of a successful endpoint call",
+            value=examples.ourdict["PassesAnalysis"],
+            response_only=True,
+            status_codes=["200"],
+            ),
+            OpenApiExample(
+            "Status code 400",
+            description="An example of a failed endpoint call",
+            value={"status": "failed"},
+            response_only=True,
+            status_codes=["400"],
+            )
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
 
 class PassesCost(generics.ListAPIView):
     """
@@ -453,6 +540,7 @@ class PassesCost(generics.ListAPIView):
         qs = Pass.objects.filter(timestamp__lte=date_to, timestamp__gte=date_from, stationref__in=op1_stations, vehicleref__in=op2_vehicles)
         return qs
 
+
     def list(self, request, *args, **kwargs):
         """
             Overwrite the method to add custom values to the response
@@ -487,6 +575,54 @@ class PassesCost(generics.ListAPIView):
         }
         return Response(response_data)
 
+    # NOT_FOUND_RESPONSE = OpenApiExample(
+    #     "My example",
+    #     description="Not Found",
+    #     value={"detail": "Not found."},
+    #     response_only=True,
+    #     status_codes=["200", "400"],
+    # )
+    @extend_schema (
+        responses={
+            200: inline_serializer(
+               name='PassesCost_200',
+               fields= {
+                'op1_ID': serializers.CharField(),
+                'op2_ID': serializers.CharField(),
+                'RequestTimestamp': serializers.DateTimeField(),
+                'PeriodFrom': serializers.DateTimeField(),
+                'PeriodTo':  serializers.DateTimeField(),
+                'NumberOfPasses': serializers.IntegerField(),
+                'PassesCost': serializers.IntegerField()
+                }
+            ),
+            400: inline_serializer(
+                name='PassesCost_400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+        },
+        examples=[
+            OpenApiExample(
+            "Status code 200",
+            description="An example of a successful endpoint call",
+            value=examples.ourdict["PassesCost"],
+            response_only=True,
+            status_codes=["200"],
+            ),
+            OpenApiExample(
+            "Status code 400",
+            description="An example of a failed endpoint call",
+            value={"status": "failed"},
+            response_only=True,
+            status_codes=["400"],
+            )
+        ],
+    )
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 class ChargesBy(generics.GenericAPIView):
     """
@@ -518,6 +654,49 @@ class ChargesBy(generics.GenericAPIView):
         }
         return response_data
 
+    @extend_schema (
+        responses={
+            200: inline_serializer(
+               name='ChargesBy_200',
+               fields= {
+                'op_ID': serializers.CharField(),
+                'RequestTimestamp': serializers.DateTimeField(),
+                'PeriodFrom': serializers.DateTimeField(),
+                'PeriodTo': serializers.DateTimeField(),
+                'PPOList': inline_serializer(
+                    name='PPOList',
+                    fields={
+                    'VisitingOperator': serializers.CharField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesCost': serializers.FloatField()
+                    }
+            )
+               }
+            ),
+            400: inline_serializer(
+                name='ChargesBy_400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+        },
+        examples=[
+            OpenApiExample(
+            "Status code 200",
+            description="An example of a successful endpoint call",
+            value=examples.ourdict["ChargesBy"],
+            response_only=True,
+            status_codes=["200"],
+            ),
+            OpenApiExample(
+            "Status code 400",
+            description="An example of a failed endpoint call",
+            value={"status": "failed"},
+            response_only=True,
+            status_codes=["400"],
+            )
+        ],
+    )
     def get(self, request, *args, **kwargs):
 
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
