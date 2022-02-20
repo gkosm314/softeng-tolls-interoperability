@@ -15,17 +15,15 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, exte
 @extend_schema (
     responses={
         200: inline_serializer(
-            name='200',
+            name='hardreset 200',
             fields= {
                 'status': serializers.CharField(),
-                "dbconnection": serializers.CharField()
             }
         ),
         500: inline_serializer(
-            name='500',
+            name='hardreset 500',
             fields={
                 'status': serializers.CharField(),
-                "dbconnection": serializers.CharField()
             }
         )
     },
@@ -35,7 +33,6 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, exte
             description="An example of a successful endpoint call.",
             value={
                     "status": "OK",
-                    "dbconnection": "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"
                 },
             response_only=True,
             status_codes=["200"],
@@ -45,7 +42,6 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, exte
             description="Internal server error",
             value={
                 "status": "failed",
-                "dbconnection": "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"
             },
             response_only=True,
             status_codes=["500"]
@@ -66,14 +62,14 @@ def api_admin_hardreset(request, response_format = 'json'):
 @extend_schema (
     responses={
         200: inline_serializer(
-            name='200',
+            name='healthcheck 200',
             fields= {
                 'status': serializers.CharField(),
                 "dbconnection": serializers.CharField()
             }
         ),
         500: inline_serializer(
-            name='500',
+            name='healthcheck 500',
             fields={
                 'status': serializers.CharField(),
                 "dbconnection": serializers.CharField()
@@ -85,9 +81,9 @@ def api_admin_hardreset(request, response_format = 'json'):
             "Successful",
             description="An example of a successful endpoint call.",
             value={
-                    "status": "OK",
-                    "dbconnection": "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"
-                },
+                "status": "OK",
+                "dbconnection": "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"
+            },
             response_only=True,
             status_codes=["200"],
         ),
@@ -115,13 +111,13 @@ def api_admin_healthcheck(request, response_format = 'json'):
 @extend_schema (
     responses={
         200: inline_serializer(
-            name='200',
+            name='resetpasses 200',
             fields= {
                 'status': serializers.CharField()
             }
         ),
         500: inline_serializer(
-            name='500',
+            name='resetpasses 500',
             fields={
                 'status': serializers.CharField()
             }
@@ -132,7 +128,7 @@ def api_admin_healthcheck(request, response_format = 'json'):
             "Successful",
             description="An example of a successful endpoint call.",
             value={
-                    "status": "OK"
+                "status": "OK"
                 },
             response_only=True,
             status_codes=["200"],
@@ -160,13 +156,13 @@ def api_admin_resetpasses(request, response_format = 'json'):
 @extend_schema (
     responses={
         200: inline_serializer(
-            name='200',
+            name='resetstations 200',
             fields= {
                 'status': serializers.CharField()
             }
         ),
         500: inline_serializer(
-            name='500',
+            name='resetstations 500',
             fields={
                 'status': serializers.CharField()
             }
@@ -177,7 +173,7 @@ def api_admin_resetpasses(request, response_format = 'json'):
             "Successful",
             description="An example of a successful endpoint call.",
             value={
-                    "status": "OK"
+                "status": "OK"
                 },
             response_only=True,
             status_codes=["200"],
@@ -205,13 +201,13 @@ def api_admin_resetstations(request, response_format = 'json'):
 @extend_schema (
     responses={
         200: inline_serializer(
-            name='200',
+            name='resetvehicles 200',
             fields= {
                 'status': serializers.CharField()
             }
         ),
         500: inline_serializer(
-            name='500',
+            name='resetvehicles 500',
             fields={
                 'status': serializers.CharField()
             }
@@ -222,7 +218,7 @@ def api_admin_resetstations(request, response_format = 'json'):
             "Successful",
             description="An example of a successful endpoint call.",
             value={
-                    "status": "OK"
+                "status": "OK"
                 },
             response_only=True,
             status_codes=["200"],

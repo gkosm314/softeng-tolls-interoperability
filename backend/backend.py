@@ -15,7 +15,8 @@ from rest_framework import generics, serializers
 from django.db.models import Sum
 from . import examples
 
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer, PolymorphicProxySerializer
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer, PolymorphicProxySerializer, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
 
@@ -355,33 +356,48 @@ class PassesPerStation(generics.ListAPIView):
         return Response(response_data)
 
     @extend_schema (
+        parameters=[
+            OpenApiParameter(
+                name='datefrom',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.PATH,
+                description='Date format: yyyy-mm-dd',
+                examples=[
+                    OpenApiExample(
+                        'Date example',
+                        summary='short optional summary',
+                        description='longer description',
+                        value='2020-04-23'
+                    )
+                ]
+            ),
+        ],
         responses={
             200: inline_serializer(
-               name='PassesPerStation_200',
-               fields= {
-                'Station': serializers.CharField(),
-                'StationOperator': serializers.CharField(),
-                'RequestTimestamp': serializers.DateTimeField(),
-                'PeriodFrom': serializers.DateTimeField(),
-                'PeriodTo':  serializers.DateTimeField(),
-                'NumberOfPasses': serializers.IntegerField(),
-                'PassesList': PassSerializer()
+                name='PassesPerStation 200',
+                fields={
+                    'Station': serializers.CharField(),
+                    'StationOperator': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateTimeField(),
+                    'PeriodTo':  serializers.DateTimeField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer()
                }
             ),
             400: inline_serializer(
-                name='PassesPerStation_400',
+                name='PassesPerStation 400',
                 fields={
                     'status': serializers.CharField()
                 }
             ),
             401: PolymorphicProxySerializer(
-                component_name='Response error',
-                
+                component_name='Status code 401',
                 serializers=[
                     inline_serializer(
                         name="401 No credentials",
                         fields={
-                         "detail": serializers.CharField()
+                            "detail": serializers.CharField()
                         }
                     ),
                     inline_serializer(
@@ -403,7 +419,7 @@ class PassesPerStation(generics.ListAPIView):
                 resource_type_field_name= None,
             ),
             500: inline_serializer(
-                name='500',
+                name='PassesPerStation 500',
                 fields={
                     'status': serializers.CharField()
                 }
@@ -411,18 +427,18 @@ class PassesPerStation(generics.ListAPIView):
         },
         examples=[
             OpenApiExample(
-            "Successful",
-            description="An example of a successful endpoint call.",
-            value=examples.ourdict["PassesPerStation"],
-            response_only=True,
-            status_codes=["200"],
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["PassesPerStation"],
+                response_only=True,
+                status_codes=["200"],
             ),
             OpenApiExample(
-            "Bad request",
-            description="An example of a failed endpoint call due to bad request.",
-            value={"status": "failed"},
-            response_only=True,
-            status_codes=["400"],
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
             ),
             OpenApiExample(
                 "No credentials",
@@ -520,26 +536,25 @@ class PassesAnalysis(generics.ListAPIView):
     @extend_schema (
         responses={
             200: inline_serializer(
-               name='PassesAnalysis_200',
-               fields= {
-                'op1_ID': serializers.CharField(),
-                'op2_ID': serializers.CharField(),
-                'RequestTimestamp': serializers.DateTimeField(),
-                'PeriodFrom': serializers.DateTimeField(),
-                'PeriodTo':  serializers.DateTimeField(),
-                'NumberOfPasses': serializers.IntegerField(),
-                'PassesList': PassSerializer()
+                name='PassesAnalysis 200',
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateTimeField(),
+                    'PeriodTo':  serializers.DateTimeField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer()
                }
             ),
             400: inline_serializer(
-                name='PassesAnalysis_400',
+                name='PassesAnalysis 400',
                 fields={
                     'status': serializers.CharField()
                 }
             ),
             401: PolymorphicProxySerializer(
-                component_name='Response error',
-                
+                component_name='Status code 401',
                 serializers=[
                     inline_serializer(
                         name="401 No credentials",
@@ -566,7 +581,7 @@ class PassesAnalysis(generics.ListAPIView):
                 resource_type_field_name= None,
             ),
             500: inline_serializer(
-                name='500',
+                name='PassesAnalysis 500',
                 fields={
                     'status': serializers.CharField()
                 }
@@ -574,18 +589,18 @@ class PassesAnalysis(generics.ListAPIView):
         },
         examples=[
             OpenApiExample(
-            "Successful",
-            description="An example of a successful endpoint call.",
-            value=examples.ourdict["PassesAnalysis"],
-            response_only=True,
-            status_codes=["200"],
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["PassesAnalysis"],
+                response_only=True,
+                status_codes=["200"],
             ),
             OpenApiExample(
-            "Bad request",
-            description="An example of a failed endpoint call due to bad request.",
-            value={"status": "failed"},
-            response_only=True,
-            status_codes=["400"],
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
             ),
             OpenApiExample(
                 "No credentials",
@@ -686,36 +701,28 @@ class PassesCost(generics.ListAPIView):
         }
         return Response(response_data)
 
-    # NOT_FOUND_RESPONSE = OpenApiExample(
-    #     "My example",
-    #     description="Not Found",
-    #     value={"detail": "Not found."},
-    #     response_only=True,
-    #     status_codes=["200", "400"],
-    # )
     @extend_schema (
         responses={
             200: inline_serializer(
-               name='PassesCost_200',
-               fields= {
-                'op1_ID': serializers.CharField(),
-                'op2_ID': serializers.CharField(),
-                'RequestTimestamp': serializers.DateTimeField(),
-                'PeriodFrom': serializers.DateTimeField(),
-                'PeriodTo':  serializers.DateTimeField(),
-                'NumberOfPasses': serializers.IntegerField(),
-                'PassesCost': serializers.IntegerField()
+                name='PassesCost 200',
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateTimeField(),
+                    'PeriodTo':  serializers.DateTimeField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesCost': serializers.IntegerField()
                 }
             ),
             400: inline_serializer(
-                name='PassesCost_400',
+                name='PassesCost 400',
                 fields={
                     'status': serializers.CharField()
                 }
             ),
             401: PolymorphicProxySerializer(
-                component_name='Response error',
-                
+                component_name='Status code 401',  
                 serializers=[
                     inline_serializer(
                         name="401 No credentials",
@@ -742,7 +749,7 @@ class PassesCost(generics.ListAPIView):
                 resource_type_field_name= None,
             ),
             500: inline_serializer(
-                name='500',
+                name='PassesCost 500',
                 fields={
                     'status': serializers.CharField()
                 }
@@ -750,18 +757,18 @@ class PassesCost(generics.ListAPIView):
         },
         examples=[
             OpenApiExample(
-            "Successful",
-            description="An example of a successful endpoint call.",
-            value=examples.ourdict["PassesCost"],
-            response_only=True,
-            status_codes=["200"],
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["PassesCost"],
+                response_only=True,
+                status_codes=["200"],
             ),
             OpenApiExample(
-            "Bad request",
-            description="An example of a failed endpoint call due to bad request.",
-            value={"status": "failed"},
-            response_only=True,
-            status_codes=["400"],
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
             ),
             OpenApiExample(
                 "No credentials",
@@ -824,31 +831,30 @@ class ChargesBy(generics.GenericAPIView):
     @extend_schema (
         responses={
             200: inline_serializer(
-               name='ChargesBy_200',
-               fields= {
-                'op_ID': serializers.CharField(),
-                'RequestTimestamp': serializers.DateTimeField(),
-                'PeriodFrom': serializers.DateTimeField(),
-                'PeriodTo': serializers.DateTimeField(),
-                'PPOList': inline_serializer(
-                    name='PPOList',
-                    fields={
-                    'VisitingOperator': serializers.CharField(),
-                    'NumberOfPasses': serializers.IntegerField(),
-                    'PassesCost': serializers.FloatField()
-                    }
+                name='ChargesBy 200',
+                fields= {
+                    'op_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateTimeField(),
+                    'PeriodTo': serializers.DateTimeField(),
+                    'PPOList': inline_serializer(
+                        name='PPOList',
+                        fields={
+                        'VisitingOperator': serializers.CharField(),
+                        'NumberOfPasses': serializers.IntegerField(),
+                        'PassesCost': serializers.FloatField()
+                        }
             )
                }
             ),
             400: inline_serializer(
-                name='ChargesBy_400',
+                name='ChargesBy 400',
                 fields={
                     'status': serializers.CharField()
                 }
             ),
             401: PolymorphicProxySerializer(
-                component_name='Response error',
-                
+                component_name='Status code 401',   
                 serializers=[
                     inline_serializer(
                         name="401 No credentials",
@@ -875,7 +881,7 @@ class ChargesBy(generics.GenericAPIView):
                 resource_type_field_name= None,
             ),
             500: inline_serializer(
-                name='500',
+                name='ChargesBy 500',
                 fields={
                     'status': serializers.CharField()
                 }
@@ -883,18 +889,18 @@ class ChargesBy(generics.GenericAPIView):
         },
         examples=[
             OpenApiExample(
-            "Successful",
-            description="An example of a successful endpoint call.",
-            value=examples.ourdict["ChargesBy"],
-            response_only=True,
-            status_codes=["200"],
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["ChargesBy"],
+                response_only=True,
+                status_codes=["200"],
             ),
             OpenApiExample(
-            "Bad request",
-            description="An example of a failed endpoint call due to bad request.",
-            value={"status": "failed"},
-            response_only=True,
-            status_codes=["400"],
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
             ),
             OpenApiExample(
                 "No credentials",
