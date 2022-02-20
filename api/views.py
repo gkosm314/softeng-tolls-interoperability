@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
@@ -10,7 +10,7 @@ from .permissions import UserBelongsToProviderGroup
 
 from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles
 from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView, RefreshView
-
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer
 
 @api_view(['POST'])
 def api_admin_hardreset(request, response_format = 'json'):
@@ -23,7 +23,46 @@ def api_admin_hardreset(request, response_format = 'json'):
     #Calls equivelant API call from backend/backend.py
     return admin_hardreset(response_format)
 
-
+@extend_schema (
+    responses={
+        200: inline_serializer(
+            name='200',
+            fields= {
+                'status': serializers.CharField(),
+                "dbconnection": serializers.CharField()
+            }
+        ),
+        500: inline_serializer(
+            name='500',
+            fields={
+                'status': serializers.CharField(),
+                "dbconnection": serializers.CharField()
+            }
+        )
+    },
+    examples=[
+        OpenApiExample(
+            "Successful",
+            description="An example of a successful endpoint call.",
+            value={
+                    "status": "OK",
+                    "dbconnection": "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"
+                },
+            response_only=True,
+            status_codes=["200"],
+        ),
+        OpenApiExample(
+            "Internal server error",
+            description="Internal server error",
+            value={
+                "status": "failed",
+                "dbconnection": "mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database"
+            },
+            response_only=True,
+            status_codes=["500"]
+        )
+    ]
+)
 @api_view(['GET'])
 def api_admin_healthcheck(request, response_format = 'json'):
     """

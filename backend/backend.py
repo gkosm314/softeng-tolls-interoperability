@@ -15,7 +15,7 @@ from rest_framework import generics, serializers
 from django.db.models import Sum
 from . import examples
 
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer, PolymorphicProxySerializer
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
 
@@ -374,27 +374,33 @@ class PassesPerStation(generics.ListAPIView):
                     'status': serializers.CharField()
                 }
             ),
-            # ,
-            # 401: inline_serializer(
-            #     name='401 Invalid Token',
-            #     fields={
-            #         "detail": serializers.CharField(),
-            #         "code": serializers.CharField(),
-            #         "messages": inline_serializer(
-            #             name="messages",
-            #             fields={
-            #                 "token_class": serializers.CharField(),
-            #                 "token_type": serializers.CharField(),
-            #                 "message": serializers.CharField()
-            #             }
-            #         )
-            #     }
-            # ),
-            401: inline_serializer(
-                name="401 No credentials",
-                fields={
-                    "detail": serializers.CharField()
-                }
+            401: PolymorphicProxySerializer(
+                component_name='Response error',
+                
+                serializers=[
+                    inline_serializer(
+                        name="401 No credentials",
+                        fields={
+                         "detail": serializers.CharField()
+                        }
+                    ),
+                    inline_serializer(
+                        name='401 Invalid Token',
+                        fields={
+                            "detail": serializers.CharField(),
+                            "code": serializers.CharField(),
+                            "messages": inline_serializer(
+                                name="messages",
+                                fields={
+                                    "token_class": serializers.CharField(),
+                                    "token_type": serializers.CharField(),
+                                    "message": serializers.CharField()
+                                }
+                            )
+                        }
+                    )
+                ],
+                resource_type_field_name= None,
             ),
             500: inline_serializer(
                 name='500',
@@ -405,23 +411,30 @@ class PassesPerStation(generics.ListAPIView):
         },
         examples=[
             OpenApiExample(
-            "Status code 200",
-            description="An example of a successful endpoint call",
+            "Successful",
+            description="An example of a successful endpoint call.",
             value=examples.ourdict["PassesPerStation"],
             response_only=True,
             status_codes=["200"],
             ),
             OpenApiExample(
-            "Status code 400",
-            description="An example of a failed endpoint call",
+            "Bad request",
+            description="An example of a failed endpoint call due to bad request.",
             value={"status": "failed"},
             response_only=True,
             status_codes=["400"],
             ),
             OpenApiExample(
                 "No credentials",
-                description="Output when credentials are not provided",
+                description="Output when credentials are not provided.",
                 value=examples.ourdict["Unauthorized_noCredentials"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Invalid Token",
+                description="Token is invalid.",
+                value=examples.ourdict["Unauthorized_invalidToken"],
                 response_only=True,
                 status_codes=["401"]
             ),
@@ -527,15 +540,15 @@ class PassesAnalysis(generics.ListAPIView):
         },
         examples=[
             OpenApiExample(
-            "Status code 200",
-            description="An example of a successful endpoint call",
+            "Successful",
+            description="An example of a successful endpoint call.",
             value=examples.ourdict["PassesAnalysis"],
             response_only=True,
             status_codes=["200"],
             ),
             OpenApiExample(
-            "Status code 400",
-            description="An example of a failed endpoint call",
+            "Bad request",
+            description="An example of a failed endpoint call due to bad request.",
             value={"status": "failed"},
             response_only=True,
             status_codes=["400"],
@@ -648,15 +661,15 @@ class PassesCost(generics.ListAPIView):
         },
         examples=[
             OpenApiExample(
-            "Status code 200",
-            description="An example of a successful endpoint call",
+            "Successful",
+            description="An example of a successful endpoint call.",
             value=examples.ourdict["PassesCost"],
             response_only=True,
             status_codes=["200"],
             ),
             OpenApiExample(
-            "Status code 400",
-            description="An example of a failed endpoint call",
+            "Bad request",
+            description="An example of a failed endpoint call due to bad request.",
             value={"status": "failed"},
             response_only=True,
             status_codes=["400"],
@@ -725,15 +738,15 @@ class ChargesBy(generics.GenericAPIView):
         },
         examples=[
             OpenApiExample(
-            "Status code 200",
-            description="An example of a successful endpoint call",
+            "Successful",
+            description="An example of a successful endpoint call.",
             value=examples.ourdict["ChargesBy"],
             response_only=True,
             status_codes=["200"],
             ),
             OpenApiExample(
-            "Status code 400",
-            description="An example of a failed endpoint call",
+            "Bad request",
+            description="An example of a failed endpoint call due to bad request.",
             value={"status": "failed"},
             response_only=True,
             status_codes=["400"],
