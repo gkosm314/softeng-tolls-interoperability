@@ -132,7 +132,7 @@ def admin_hardreset(response_format = 'json'):
         Station.objects.all().delete()
         Vehicle.objects.all().delete()
         Pass.objects.all().delete()
-        Payment.objects.all().delete()
+        #Payment.objects.all().delete()
 
         #Insert providers
         with open(providers_csv_path) as csv_file:
@@ -789,6 +789,7 @@ class PassesCost(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
 
 class ChargesBy(generics.GenericAPIView):
     """
