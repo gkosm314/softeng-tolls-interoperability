@@ -1,8 +1,10 @@
-# This dictionary contains examples for the following endpoints:
+# This dictionary contains examples for the following cases:
 #   - ChargesBy
 #   - PassesAnalysis
 #   - PassesCost
 #   - PassesPerStation
+#   - Unauthorized_invalidToken
+#   - Unauthorized_noCredentials
 
 ourdict = {
     "ChargesBy":
@@ -186,5 +188,24 @@ ourdict = {
                 "providerabbr": 3
             }
         ]
+    },
+
+    "Unauthorized_invalidToken":
+    {
+        "detail": "Given token not valid for any token type",
+        "code": "token_not_valid",
+        "messages": [
+            {
+                "token_class": "AccessToken",
+                "token_type": "access",
+                "message": "Token is invalid or expired"
+            }
+        ]
+    },
+
+    "Unauthorized_noCredentials":
+    {
+        "detail": "Authentication credentials were not provided."
     }
+
 }

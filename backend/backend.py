@@ -374,6 +374,34 @@ class PassesPerStation(generics.ListAPIView):
                     'status': serializers.CharField()
                 }
             ),
+            # ,
+            # 401: inline_serializer(
+            #     name='401 Invalid Token',
+            #     fields={
+            #         "detail": serializers.CharField(),
+            #         "code": serializers.CharField(),
+            #         "messages": inline_serializer(
+            #             name="messages",
+            #             fields={
+            #                 "token_class": serializers.CharField(),
+            #                 "token_type": serializers.CharField(),
+            #                 "message": serializers.CharField()
+            #             }
+            #         )
+            #     }
+            # ),
+            401: inline_serializer(
+                name="401 No credentials",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            500: inline_serializer(
+                name='500',
+                fields={
+                    'status': serializers.CharField()
+                }
+            )
         },
         examples=[
             OpenApiExample(
@@ -389,7 +417,22 @@ class PassesPerStation(generics.ListAPIView):
             value={"status": "failed"},
             response_only=True,
             status_codes=["400"],
+            ),
+            OpenApiExample(
+                "No credentials",
+                description="Output when credentials are not provided",
+                value=examples.ourdict["Unauthorized_noCredentials"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Internal server error",
+                description="Internal server error",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["500"]
             )
+
         ],
     )
     def get(self, request, *args, **kwargs):
