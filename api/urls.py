@@ -13,7 +13,7 @@ urlpatterns = [
     path('admin/hardreset', views.api_admin_hardreset, name='hardreset_url'),
 
     path('login', views.ApiLoginView.as_view(), name="login_url"),
-    path('refresh', views.ApiRefreshView, name="refresh_url"),
+    path('refresh', views.ApiRefreshView.as_view(), name="refresh_url"),
 
     path('PassesPerStation/<stationID>/<datefrom>/<dateto>', views.ApiPassesPerStation.as_view(), name='passes_per_station'),
     path('PassesAnalysis/<op1_ID>/<op2_ID>/<datefrom>/<dateto>', views.ApiPassesAnalysis.as_view(), name='passes_analysis'),
