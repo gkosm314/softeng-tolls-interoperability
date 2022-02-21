@@ -366,7 +366,16 @@ class PassesPerStation(generics.ListAPIView):
             'NumberOfPasses': len(data),
             'PassesList': data
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        """
+        if len(data) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
 
 
 class PassesAnalysis(generics.ListAPIView):
@@ -432,7 +441,16 @@ class PassesAnalysis(generics.ListAPIView):
             'NumberOfPasses': len(data),
             'PassesList': data
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        """
+        if len(data) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
 
 
 class PassesCost(generics.ListAPIView):
@@ -504,7 +522,16 @@ class PassesCost(generics.ListAPIView):
             'NumberOfPasses': len(data),
             'PassesCost': price
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        """
+        if len(data) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
 
 
 class ChargesBy(generics.GenericAPIView):
@@ -561,4 +588,20 @@ class ChargesBy(generics.GenericAPIView):
             'PeriodTo': date_to,
             'PPOList': costs
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        
+        In the current implementation for this particular endpoint there is no way that len(costs) == 0 since we are
+        not excluding operators who haven't had any passes in the specified time period
+        If this is to change, meaning we are discarding the cost objects where NumberOfPasses == 0 in the costs list
+        then this would be possible
+        Leaving it here for this exact case it is decided to change in the future and for consistency with the other
+        API endpoints 
+        """
+        if len(costs) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
