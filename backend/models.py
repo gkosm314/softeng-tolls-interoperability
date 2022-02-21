@@ -40,7 +40,7 @@ class Station(models.Model):
         db_table = 'Stations'
 
 class Tag(models.Model):
-    tagid = models.CharField(db_column='tagID', max_length=9)
+    tagid = models.CharField(db_column='tagID', primary_key=True, max_length=9)
     tagprovider = models.CharField(db_column='tagProvider', max_length=20)
     isvalid = models.IntegerField(db_column='isValid', default = 1)
 
