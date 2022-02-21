@@ -55,7 +55,7 @@ def count_passes_per_station(my_provider_parameter, date_from, date_to):
 
     my_provider_id = Provider.objects.get(providerabbr = my_provider_parameter).providerid
     qs_stations = Station.objects.filter(stationprovider = my_provider_id).all()
-    qs_passes = Pass.objects.filter(providerabbr = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
+    qs_passes = Pass.objects.filter(stationref__stationprovider__providerid = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
 
     passes_per_station = {s.stationid:0 for s in qs_stations}
 
@@ -70,7 +70,7 @@ def count_passes_from_each_provider(my_provider_parameter, date_from, date_to):
     #QuerySet which contains all the Passes from the stations owned by provider_abbr_parameter
     my_provider_id = Provider.objects.get(providerabbr = my_provider_parameter).providerid
     qs_providers = Provider.objects.all()
-    qs_passes = Pass.objects.filter(providerabbr = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
+    qs_passes = Pass.objects.filter(stationref__stationprovider__providerid = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
 
     passes_per_provider = {prov.providerabbr:0 for prov in qs_providers}
     total_passes_counter = 0

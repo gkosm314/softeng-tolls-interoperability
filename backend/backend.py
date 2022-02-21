@@ -5,7 +5,7 @@ from django.contrib.auth import logout
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .models import Pass, Provider, Station, Vehicle
+from .models import Pass, Provider, Station, Vehicle, Tag
 import csv
 from datetime import datetime
 from .serializers import PassSerializer, StationSerializer
@@ -41,6 +41,10 @@ def all_vehicles_invalid():
         v.isvalid = 0
         v.save()
 
+    for t in Tag.objects.all():
+        t.isvalid = 0
+        t.save()
+
 
 def update_station_from_csv_line(row):
     """
@@ -66,14 +70,18 @@ def update_vehicle_from_csv_line(row):
         -row: a csv line from a csv.reader that reads vehicle_csv_path
     """
 
-    new_vehicleid = row[0]
     new_tagid = row[1]
     new_tagprovider = row[2]
+
+    new_tag = Tag(tagid = new_tagid, tagprovider = new_tagprovider)
+    new_tag.save()
+
+    new_vehicleid = row[0]
     new_providerabbr = Provider.objects.get(providerabbr = row[3])
     new_licenceyear = row[4]
 
-    new_station = Vehicle(vehicleid = new_vehicleid, tagid = new_tagid, tagprovider = new_tagprovider, providerabbr = new_providerabbr, licenseyear = new_licenceyear, isvalid = 1)
-    new_station.save()
+    new_vehicle = Vehicle(vehicleid = new_vehicleid, tag = new_tag, providerabbr = new_providerabbr, licenseyear = new_licenceyear, isvalid = 1)
+    new_vehicle.save()
 
 
 def update_provider_from_csv_line(row):
@@ -104,13 +112,13 @@ def update_pass_from_csv_line(row):
     new_timestamp = datetime.strptime(row[1], "%d/%m/%Y %H:%M") #string to datetime python object (python built-in datetime library)
     new_stationref = Station.objects.get(stationid = row[2])
     new_vehicleref = Vehicle.objects.get(vehicleid = row[3])
-    new_providerabbr = new_stationref.stationprovider;
     new_charge = row[4]
 
     #If you passed from a provider's stations using said provider's tag, then the pass is a home pass
+    new_providerabbr = new_stationref.stationprovider
     new_ishome = (new_providerabbr.providerid == new_vehicleref.providerabbr.providerid)
 
-    new_pass = Pass(passid = new_passid, timestamp = new_timestamp, stationref = new_stationref, vehicleref = new_vehicleref, charge = new_charge, providerabbr = new_providerabbr, ishome = new_ishome)
+    new_pass = Pass(passid = new_passid, timestamp = new_timestamp, stationref = new_stationref, vehicleref = new_vehicleref, charge = new_charge, ishome = new_ishome)
     new_pass.save()
 
 
@@ -127,6 +135,7 @@ def admin_hardreset(response_format = 'json'):
         Provider.objects.all().delete()
         Station.objects.all().delete()
         Vehicle.objects.all().delete()
+        Tag.objects.all().delete()
         Pass.objects.all().delete()
 
         #Insert providers
@@ -169,6 +178,7 @@ def admin_hardreset(response_format = 'json'):
                 try:
                     update_vehicle_from_csv_line(row)
                 except Exception as e:
+                    print(e)
                     return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         #Insert passes
