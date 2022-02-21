@@ -312,6 +312,14 @@ class RefreshView(TokenRefreshView):
     pass
 
 
+def get_datetime_from_kwarg(kwarg_date: str) -> datetime:
+    """
+    Returns a datetime object from the kwarg_date provided
+    The expected format for kwarg_date is YYYYMMDD
+    """
+    return datetime.strptime(kwarg_date, '%Y%m%d')
+
+
 class PassesPerStation(generics.ListAPIView):
     """
     Return a list with all the passes for a given stationID and date range
@@ -322,19 +330,20 @@ class PassesPerStation(generics.ListAPIView):
 
     def get_queryset(self):
         station_id = self.kwargs['stationID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         return Pass.objects.filter(stationref__stationid=station_id, timestamp__lte=date_to, timestamp__gte=date_from)
 
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.filter_queryset(self.get_queryset())
         except Exception as e:
+            print(e)
             return self.invalid_request_response
         page = self.paginate_queryset(queryset)
         station_id = self.kwargs['stationID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -385,8 +394,8 @@ class PassesAnalysis(generics.ListAPIView):
         op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
         op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
 
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         # Find all the vehicles with tags of op2
         op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
         # Find all the stations with tags of op1
@@ -405,8 +414,8 @@ class PassesAnalysis(generics.ListAPIView):
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
         op2_id_from_request = self.kwargs['op2_ID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -454,8 +463,8 @@ class PassesCost(generics.ListAPIView):
         """
         op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
         op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         # Find all the vehicles with tags of op2
         op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
         # Find all the stations with tags of op1
@@ -475,8 +484,8 @@ class PassesCost(generics.ListAPIView):
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
         op2_id_from_request = self.kwargs['op2_ID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -534,8 +543,8 @@ class ChargesBy(generics.GenericAPIView):
         op_id_from_request = self.kwargs['op_ID']
         other_operators_ids = Provider.objects.exclude(providerabbr=op_id_from_request)
 
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         costs = []
 
         for visiting_operator_id in other_operators_ids:
