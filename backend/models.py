@@ -47,6 +47,9 @@ class Station(models.Model):
     stationname = models.CharField(db_column='stationName', unique=True, max_length=30)
     isvalid = models.IntegerField(db_column='isValid', default = 1)
 
+    def __str__(self):
+        return self.stationid
+
     class Meta:
         db_table = 'Stations'
 
