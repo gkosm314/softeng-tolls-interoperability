@@ -22,7 +22,7 @@ class Pass(models.Model):
         """
         if self.ishome:
             return 'home'
-        return 'away'
+        return 'visitor'
 
     class Meta:
         db_table = 'Passes'
