@@ -16,6 +16,14 @@ class Pass(models.Model):
     charge = models.FloatField()
     ishome = models.IntegerField(db_column='isHome')
 
+    def is_home_str(self):
+        """
+        Returns the string representation needed for the PassesPerStation API endpoint
+        """
+        if self.ishome:
+            return 'home'
+        return 'away'
+
     class Meta:
         db_table = 'Passes'
 
