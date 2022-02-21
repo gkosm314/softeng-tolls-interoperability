@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -148,4 +149,10 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'An implementation of the interoperability of tolls',
     'VERSION': '1.0.0',
     # OTHER SETTINGS
+}
+
+# Simple jwt expire time, useful for dev
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30)
 }
