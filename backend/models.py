@@ -26,6 +26,9 @@ class Provider(models.Model):
     providerabbr = models.CharField(db_column='providerAbbr', unique=True, max_length=2)
     isvalid = models.IntegerField(db_column='isValid', default = 1)
 
+    def __str__(self):
+        return self.providername
+
     class Meta:
         db_table = 'Providers'
 
@@ -39,13 +42,18 @@ class Station(models.Model):
     class Meta:
         db_table = 'Stations'
 
+
 class Tag(models.Model):
     tagid = models.CharField(db_column='tagID', primary_key=True, max_length=9)
     tagprovider = models.CharField(db_column='tagProvider', max_length=20)
     isvalid = models.IntegerField(db_column='isValid', default = 1)
 
+    def __str__(self):
+        return self.tagid
+
     class Meta:
         db_table = 'Tag'
+
 
 class Vehicle(models.Model):
     vehicleid = models.CharField(db_column='vehicleID', primary_key=True, max_length=12)
@@ -53,6 +61,9 @@ class Vehicle(models.Model):
     providerabbr = models.ForeignKey(Provider, models.CASCADE, db_column='providerAbbr')
     licenseyear = models.IntegerField(db_column='licenseYear')
     isvalid = models.IntegerField(db_column='isValid', default = 1)
+
+    def __str__(self):
+        return self.vehicleid
 
     class Meta:
         db_table = 'Vehicles'
