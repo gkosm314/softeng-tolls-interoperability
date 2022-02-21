@@ -39,8 +39,16 @@ class UserBelongsToProviderGroup(permissions.BasePermission):
                 return True
             providerabbr = station.stationprovider.providerabbr
         # Check if there is the op1_ID kwarg in the url
-        elif 'op1_ID' in view.kwargs:
-            providerabbr = view.kwargs['op1_ID']
+        elif 'op1_ID' in view.kwargs and 'op2_ID' in view.kwargs:
+            providerabbr1 = view.kwargs['op1_ID']
+            if not Provider.objects.filter(providerabbr=providerabbr1).exists():
+                # return true and let the view catch the exception
+                return True
+            providerabbr2 = view.kwargs['op2_ID']
+            if not Provider.objects.filter(providerabbr=providerabbr2).exists():
+                # return true and let the view catch the exception
+                return True
+            return user.groups.filter(name=providerabbr2).exists() | user.groups.filter(name=providerabbr1).exists()
         elif 'op_ID' in view.kwargs:
             providerabbr = view.kwargs['op_ID']
 
