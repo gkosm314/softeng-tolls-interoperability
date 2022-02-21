@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .models import Pass, Provider, Station, Vehicle, Tag
 import csv
 from datetime import datetime
-from .serializers import PassSerializer, StationSerializer
+from .serializers import PassSerializer_PassesPerStation, PassSerializer_PassesAnalysis ,StationSerializer
 from rest_framework import generics
 from django.db.models import Sum
 
@@ -317,7 +317,7 @@ class PassesPerStation(generics.ListAPIView):
     Return a list with all the passes for a given stationID and date range
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesPerStation
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -367,7 +367,7 @@ class PassesAnalysis(generics.ListAPIView):
         Assuming op1_ID and op2_ID are the providerAbbr fields
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesAnalysis
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -437,7 +437,7 @@ class PassesCost(generics.ListAPIView):
         to the PassesAnalysis one (even though there is no listing involved in the Response)
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesAnalysis
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -503,7 +503,7 @@ class ChargesBy(generics.GenericAPIView):
         Return the amount each operator owes to the provided op_ID for a given period of time
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesAnalysis
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_costs_between_operators(self, op1_abbr, op2_abbr, date_from, date_to):
