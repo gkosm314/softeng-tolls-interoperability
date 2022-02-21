@@ -12,6 +12,7 @@ from backend.backend import update_pass_from_csv_line
 from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles
 from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView
 
+import json
 
 #Helper functions
 #These functions are called by the main functions (below)
@@ -20,9 +21,14 @@ def output_response_data(response_data, format, output_path_parameter):
     Print the data returned to us by the backend.
     """
 
+    if format == 'json':
+        formatted_response = json.dumps(response_data, default=str, indent=4)
+    else:  # response_data is a csv
+        formatted_response = response_data
+
     #Check if we want to print the result at the standard output
     if output_path_parameter == "stdout":
-        print(response_data)
+        print(formatted_response)
     
     #Otherwise:
     else:
@@ -42,7 +48,7 @@ def output_response_data(response_data, format, output_path_parameter):
                 return False
 
         with open(output_path,"w+") as f:
-            print(response_data, file = f)
+            print(formatted_response, file = f)
 
     return True
 
