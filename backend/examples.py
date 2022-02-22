@@ -97,8 +97,17 @@ ourdict = {
             "Charge": "2.8"
             }
         ]
-    }
-    ,
+    },
+    "PassesAnalysis 402":
+    {
+        "op1_ID": "AO",
+        "op2_ID": "KO",
+        "RequestTimestamp": "2022-02-22 20:02:28",
+        "PeriodFrom": "2020-04-25",
+        "PeriodTo": "2020-04-20",
+        "NumberOfPasses": 0,
+        "PassesList": []
+    },
 
     "PassesCost":
     {
@@ -110,12 +119,22 @@ ourdict = {
         "NumberOfPasses": 2,
         "PassesCost": 5.6
     },
+    "PassesCost 402":
+    {
+    "op1_ID": "AO",
+    "op2_ID": "KO",
+    "RequestTimestamp": "2022-02-22 20:08:32",
+    "PeriodFrom": "2020-04-30",
+    "PeriodTo": "2020-04-29",
+    "NumberOfPasses": 0,
+    "PassesCost": 0
+    },
 
     "PassesPerStation":
     {
         "Station": "EG03",
         "StationOperator": "egnatia",
-        "RequestTimestamp": "2022-02-22 11:31:39",
+        "RequestTimestamp": "2022-02-22 19:10:58",
         "PeriodFrom": "2020-04-10",
         "PeriodTo": "2020-04-15",
         "NumberOfPasses": 4,
@@ -125,7 +144,7 @@ ourdict = {
             "PassID": "HIZ9464270",
             "PassTimeStamp": "2020-04-11T16:04:00",
             "VehicleID": "DW44ZOO26361",
-            "TagProvider": "EG",
+            "TagProvider": "egnatia",
             "PassType": "home",
             "PassCharge": "2.5"
             },
@@ -134,7 +153,7 @@ ourdict = {
             "PassID": "KAJ5037577",
             "PassTimeStamp": "2020-04-11T16:56:00",
             "VehicleID": "CM15YCB60994",
-            "TagProvider": "EG",
+            "TagProvider": "egnatia",
             "PassType": "home",
             "PassCharge": "2.0"
             },
@@ -143,7 +162,7 @@ ourdict = {
             "PassID": "PHR0622064",
             "PassTimeStamp": "2020-04-11T22:34:00",
             "VehicleID": "JV67MTI17124",
-            "TagProvider": "EG",
+            "TagProvider": "nea_odos",
             "PassType": "visitor",
             "PassCharge": "1.0"
             },
@@ -152,11 +171,21 @@ ourdict = {
             "PassID": "XGI8326917",
             "PassTimeStamp": "2020-04-13T20:35:00",
             "VehicleID": "TE24LCO18661",
-            "TagProvider": "EG",
+            "TagProvider": "egnatia",
             "PassType": "home",
             "PassCharge": "1.25"
             }
         ]
+    },
+    "PassesPerStation 402":
+    {
+        "Station": "MR01",
+        "StationOperator": "moreas",
+        "RequestTimestamp": "2022-02-22 19:45:09",
+        "PeriodFrom": "2020-04-30",
+        "PeriodTo": "2020-04-20",
+        "NumberOfPasses": 0,
+        "PassesList": []
     },
 
     "Unauthorized_invalidToken":

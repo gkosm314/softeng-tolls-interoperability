@@ -326,6 +326,96 @@ def get_datetime_from_kwarg(kwarg_date: str) -> datetime:
     return datetime.strptime(kwarg_date, '%Y%m%d')
 
 
+DATE_FROM = OpenApiParameter(
+                name='datefrom',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.PATH,
+                description='Date format: yyyymmdd',
+                examples=[
+                    OpenApiExample(
+                        'Date example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='20200412'
+                    )                  
+                ],
+)
+
+DATE_TO = OpenApiParameter(
+                name='dateto',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.PATH,
+                description='Date format: yyyymmdd',
+                examples=[
+                    OpenApiExample(
+                        'Date example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='20200429'
+                    )                  
+                ],
+)
+
+OP1_ID = OpenApiParameter(
+                name='op1_ID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Operator_ID can be one of	AO, EG, GF, KO, MR, NE, OO.',
+                examples=[
+                    OpenApiExample(
+                        'Operator 1 example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='AO'
+                    )                  
+                ],
+)
+
+OP2_ID = OpenApiParameter(
+                name='op2_ID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Operator_ID can be one of	AO, EG, GF, KO, MR, NE, OO.',
+                examples=[
+                    OpenApiExample(
+                        'Operator 2 example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='KO'
+                    )                  
+                ],
+)
+
+OP_ID = OpenApiParameter(
+                name='op_ID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Operator_ID can be one of	AO, EG, GF, KO, MR, NE, OO.',
+                examples=[
+                    OpenApiExample(
+                        'Operator example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='NE'
+                    )                  
+                ],
+)
+
+STATION_ID = OpenApiParameter(
+                name='stationID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='',
+                examples=[
+                    OpenApiExample(
+                        'StationID example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='AO01'
+                    )                  
+                ],
+)
+
 class PassesPerStation(generics.ListAPIView):
     """
     Return a list with all the passes for a given stationID and date range
@@ -385,20 +475,9 @@ class PassesPerStation(generics.ListAPIView):
 
     @extend_schema (
         parameters=[
-            OpenApiParameter(
-                name='datefrom',
-                type=OpenApiTypes.DATE,
-                location=OpenApiParameter.PATH,
-                description='Date format: yyyymmdd',
-                examples=[
-                    OpenApiExample(
-                        'Date example',
-                        #summary='short optional summary',
-                        #description='longer description',
-                        value='20200423'
-                    )                  
-                ]
-            ),
+            DATE_FROM,
+            DATE_TO,
+            STATION_ID
         ],
         responses={
             200: inline_serializer(
@@ -446,6 +525,24 @@ class PassesPerStation(generics.ListAPIView):
                 ],
                 resource_type_field_name= None,
             ),
+            402: inline_serializer(
+                name="PassesPerStation 402",
+                fields={
+                    'Station': serializers.CharField(),
+                    'StationOperator': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer_PassesPerStation()
+               }
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),
             500: inline_serializer(
                 name='PassesPerStation 500',
                 fields={
@@ -481,6 +578,20 @@ class PassesPerStation(generics.ListAPIView):
                 value=examples.ourdict["Unauthorized_invalidToken"],
                 response_only=True,
                 status_codes=["401"]
+            ),
+            OpenApiExample(
+                "No data",
+                description="An example where the response contains no data.",
+                value=examples.ourdict["PassesPerStation 402"],
+                response_only=True,
+                status_codes=["402"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
             ),
             OpenApiExample(
                 "Internal server error",
@@ -571,6 +682,12 @@ class PassesAnalysis(generics.ListAPIView):
         return Response(response_data, status=response_code)
 
     @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            OP1_ID,
+            OP2_ID
+        ],
         responses={
             200: inline_serializer(
                 name='PassesAnalysis 200',
@@ -617,6 +734,24 @@ class PassesAnalysis(generics.ListAPIView):
                 ],
                 resource_type_field_name= None,
             ),
+            402: inline_serializer(
+                name="PassesAnalysis 402",
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer_PassesAnalysis()
+               }
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),                        
             500: inline_serializer(
                 name='PassesAnalysis 500',
                 fields={
@@ -652,6 +787,20 @@ class PassesAnalysis(generics.ListAPIView):
                 value=examples.ourdict["Unauthorized_invalidToken"],
                 response_only=True,
                 status_codes=["401"]
+            ),
+            OpenApiExample(
+                "No data",
+                description="An example where the response contains no data.",
+                value=examples.ourdict["PassesAnalysis 402"],
+                response_only=True,
+                status_codes=["402"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
             ),
             OpenApiExample(
                 "Internal server error",
@@ -748,6 +897,12 @@ class PassesCost(generics.ListAPIView):
         return Response(response_data, status=response_code)
 
     @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            OP1_ID,
+            OP2_ID
+        ],
         responses={
             200: inline_serializer(
                 name='PassesCost 200',
@@ -794,6 +949,24 @@ class PassesCost(generics.ListAPIView):
                 ],
                 resource_type_field_name= None,
             ),
+            402: inline_serializer(
+                name="PassesCost 402",
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesCost': serializers.IntegerField()
+                }
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),                        
             500: inline_serializer(
                 name='PassesCost 500',
                 fields={
@@ -829,6 +1002,20 @@ class PassesCost(generics.ListAPIView):
                 value=examples.ourdict["Unauthorized_invalidToken"],
                 response_only=True,
                 status_codes=["401"]
+            ),
+            OpenApiExample(
+                "No data",
+                description="An example where the response contains no data.",
+                value=examples.ourdict["PassesCost 402"],
+                response_only=True,
+                status_codes=["402"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
             ),
             OpenApiExample(
                 "Internal server error",
@@ -875,6 +1062,11 @@ class ChargesBy(generics.GenericAPIView):
         return response_data
 
     @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            OP_ID
+        ],
         responses={
             200: inline_serializer(
                 name='ChargesBy 200',
@@ -926,6 +1118,12 @@ class ChargesBy(generics.GenericAPIView):
                 ],
                 resource_type_field_name= None,
             ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),
             500: inline_serializer(
                 name='ChargesBy 500',
                 fields={
@@ -961,6 +1159,13 @@ class ChargesBy(generics.GenericAPIView):
                 value=examples.ourdict["Unauthorized_invalidToken"],
                 response_only=True,
                 status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
             ),
             OpenApiExample(
                 "Internal server error",
