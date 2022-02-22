@@ -410,7 +410,7 @@ class PassesPerStation(generics.ListAPIView):
                     'PeriodFrom': serializers.DateTimeField(),
                     'PeriodTo':  serializers.DateTimeField(),
                     'NumberOfPasses': serializers.IntegerField(),
-                    'PassesList': PassSerializer()
+                    'PassesList': PassSerializer_PassesPerStation()
                }
             ),
             400: inline_serializer(
@@ -581,7 +581,7 @@ class PassesAnalysis(generics.ListAPIView):
                     'PeriodFrom': serializers.DateTimeField(),
                     'PeriodTo':  serializers.DateTimeField(),
                     'NumberOfPasses': serializers.IntegerField(),
-                    'PassesList': PassSerializer()
+                    'PassesList': PassSerializer_PassesAnalysis()
                }
             ),
             400: inline_serializer(

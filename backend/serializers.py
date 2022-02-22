@@ -17,7 +17,7 @@ class PassSerializer_PassesPerStation(serializers.ModelSerializer):
     PassCharge = serializers.CharField(source='charge')
     pass_index = 0
 
-    def get_PassIndex(self, obj):
+    def get_PassIndex(self, obj)->int:
         self.pass_index += 1
         return self.pass_index
 
@@ -40,7 +40,7 @@ class PassSerializer_PassesAnalysis(serializers.ModelSerializer):
     Charge = serializers.CharField(source='charge')
     pass_index = 0
 
-    def get_PassIndex(self, obj):
+    def get_PassIndex(self, obj)->int:
         self.pass_index += 1
         return self.pass_index
 
