@@ -241,3 +241,41 @@ class TestPassesCost(TestCase):
         response.data['RequestTimestamp'] = "REQUEST_TIMESTAMP"
         # This field is ignored because it depends on the time of the request
         self.assertJSONEqual(json.dumps(response.data, default=str), expected_result)
+
+
+class TestPassesAnalysis(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Call admin_hardreset in order to put the sample data in the database
+        """
+        admin_hardreset(passes_csv=sample_csv)
+        return
+
+    def test_response_returned(self):
+        """
+        Generate a request using on the /interoperability/api/PassesAnalysis view and verify that the output
+        is the one expected
+        Assumes that the correct output already exists on the file test-backend/test-data/PassesCost_expected.json
+        with the only change being the RequestTimestamp field which must be set to 'REQUEST_TIMESTAMP'
+        """
+        expected_path = 'test-backend/test-data/PassesAnalysis_expected.json'
+        factory = RequestFactory()
+        op1 = 'AO'
+        op2 = 'OO'
+        station = 'OO01'
+        datefrom = '20190102'
+        dateto = '20200105'
+        with open(expected_path, 'r') as f:
+            expected_result = json.load(f)
+        request_path = f"/interoperability/api/PassesAnalysis/{op1}/{op2}/{datefrom}/{dateto}"
+        request = factory.get(request_path)
+        response = PassesAnalysis.as_view()(request, op1_ID=op1, op2_ID=op2, datefrom=datefrom,
+                                            dateto=dateto)
+        # Check that the response is not None
+        self.assertIsNotNone(response)
+        # Check that the response object is indeed of type Response
+        self.assertEqual(type(response), Response)
+        response.data['RequestTimestamp'] = "REQUEST_TIMESTAMP"
+        # This field is ignored because it depends on the time of the request
+        self.assertJSONEqual(json.dumps(response.data, default=str), expected_result)
