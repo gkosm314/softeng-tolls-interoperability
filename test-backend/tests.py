@@ -31,7 +31,13 @@ class TestHardReset(TestCase):
 
 
 class TestHealthCheck(TestCase):
+    """
+    Implements testing of the admin_healthcheck() functionality
+    """
     def test_health_check(self):
+        """
+        Tests the expected status field of the Response and the status_code
+        """
         response = admin_healthcheck()
         status = response.data['status']
         dbconnection = response.data['dbconnection']
