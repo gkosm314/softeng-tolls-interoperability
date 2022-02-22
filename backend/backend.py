@@ -11,7 +11,7 @@ from .models import Pass, Provider, Station, Vehicle, Tag
 import csv
 from datetime import datetime
 from .serializers import PassSerializer_PassesPerStation, PassSerializer_PassesAnalysis ,StationSerializer
-from rest_framework import generics
+from rest_framework import generics, serializers
 from django.db.models import Sum
 from . import examples
 
@@ -995,9 +995,6 @@ class ChargesBy(generics.GenericAPIView):
             'PeriodTo': date_to,
             'PPOList': costs
         }
-<<<<<<< HEAD
-        return Response(response_data)
-=======
         """
         Check if there is no data, then return the same format but with 402 Response code
         Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
@@ -1015,4 +1012,3 @@ class ChargesBy(generics.GenericAPIView):
         else:
             response_code = status.HTTP_200_OK
         return Response(response_data, status=response_code)
->>>>>>> master
