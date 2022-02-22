@@ -127,3 +127,40 @@ class TestResetStations(TestCase):
         new_station.save()
         admin_resetstations()
         self.assertEqual(Station.objects.get(stationid=new_stationid).isvalid, 0)
+
+
+class TestResetVehicles(TestCase):
+    """
+    Implements testing of the admin_resetstations functionality
+    """
+
+    def test_all_vehciles_valid(self):
+        """
+        If we call admin_resetvehicles on an empty db then we should have only the stations we entered and therefore \
+        they should be valid
+        """
+        insert_providers_from_csv()  # we need to insert the providers first because of foreign key constraints
+        admin_resetvehicles()
+        # Test that there are no invalid stations
+        self.assertEqual(Vehicle.objects.filter(isvalid=0).count(), 0)
+        # Test that there are some valid stations to verify the call worked
+        self.assertNotEqual(Vehicle.objects.filter(isvalid=1).count(), 0)
+
+    def test_station_becomes_invalid(self):
+        """
+        Insert a custom vehicle that is not included in the csv file and make it valid
+        admin_resetvehicles must make it invalid
+        """
+        insert_providers_from_csv()  # we need to insert the providers first because of foreign key constraints
+        new_providerabbr = Provider.objects.all()[0]
+        new_tagid = 'TestTag'
+        new_tagprovider = str(new_providerabbr)
+        new_tag = Tag(tagid=new_tagid, tagprovider=new_tagprovider)
+        new_tag.save()
+        new_vehicleid = 'TestVehicle'
+        new_licenceyear = 1900
+        new_vehicle = Vehicle(vehicleid=new_vehicleid, tag=new_tag, providerabbr=new_providerabbr,
+                              licenseyear=new_licenceyear, isvalid=1)
+        new_vehicle.save()
+        admin_resetvehicles()
+        self.assertEqual(Vehicle.objects.get(vehicleid=new_vehicleid).isvalid, 0)
