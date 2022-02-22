@@ -140,6 +140,22 @@ def insert_passes_from_csv(passes_csv_path_param):
     return
 
 
+def insert_providers_from_csv(providers_csv_param=providers_csv_path):
+    # Insert providers
+    with open(providers_csv_param) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+
+        # Skip first line(headers)
+        next(csv_reader)
+
+        # Process each line
+        for row in csv_reader:
+            try:
+                update_provider_from_csv_line(row)
+            except Exception as e:
+                raise e
+    return
+
 def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
     """
     Implements /admin/hardreset API call.
@@ -156,19 +172,12 @@ def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
         Tag.objects.all().delete()
         Pass.objects.all().delete()
 
-        #Insert providers
-        with open(providers_csv_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=';')
-
-            #Skip first line(headers)
-            next(csv_reader)
-
-            #Process each line
-            for row in csv_reader:
-                try:
-                    update_provider_from_csv_line(row)
-                except Exception as e:
-                    return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Insert passes
+        try:
+            insert_providers_from_csv(providers_csv_param=providers_csv_path)
+        except Exception as e:
+            print(e)
+            return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         #Insert stations
         with open(stations_csv_path) as csv_file:
