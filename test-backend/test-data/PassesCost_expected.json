@@ -1,0 +1,9 @@
+{
+  "op1_ID": "OO",
+  "op2_ID": "GF",
+  "RequestTimestamp": "REQUEST_TIMESTAMP",
+  "PeriodFrom": "2019-01-02",
+  "PeriodTo": "2020-01-05",
+  "NumberOfPasses": 2,
+  "PassesCost": 3.5
+}
