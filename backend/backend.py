@@ -7,11 +7,11 @@ from django.contrib.auth import logout
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .models import Pass, Provider, Station, Vehicle
+from .models import Pass, Provider, Station, Vehicle, Tag
 import csv
 from datetime import datetime
-from .serializers import PassSerializer, StationSerializer
-from rest_framework import generics, serializers
+from .serializers import PassSerializer_PassesPerStation, PassSerializer_PassesAnalysis ,StationSerializer
+from rest_framework import generics
 from django.db.models import Sum
 from . import examples
 
@@ -46,6 +46,10 @@ def all_vehicles_invalid():
         v.isvalid = 0
         v.save()
 
+    for t in Tag.objects.all():
+        t.isvalid = 0
+        t.save()
+
 
 def update_station_from_csv_line(row):
     """
@@ -71,14 +75,18 @@ def update_vehicle_from_csv_line(row):
         -row: a csv line from a csv.reader that reads vehicle_csv_path
     """
 
-    new_vehicleid = row[0]
     new_tagid = row[1]
     new_tagprovider = row[2]
+
+    new_tag = Tag(tagid = new_tagid, tagprovider = new_tagprovider)
+    new_tag.save()
+
+    new_vehicleid = row[0]
     new_providerabbr = Provider.objects.get(providerabbr = row[3])
     new_licenceyear = row[4]
 
-    new_station = Vehicle(vehicleid = new_vehicleid, tagid = new_tagid, tagprovider = new_tagprovider, providerabbr = new_providerabbr, licenseyear = new_licenceyear, isvalid = 1)
-    new_station.save()
+    new_vehicle = Vehicle(vehicleid = new_vehicleid, tag = new_tag, providerabbr = new_providerabbr, licenseyear = new_licenceyear, isvalid = 1)
+    new_vehicle.save()
 
 
 def update_provider_from_csv_line(row):
@@ -109,13 +117,13 @@ def update_pass_from_csv_line(row):
     new_timestamp = datetime.strptime(row[1], "%d/%m/%Y %H:%M") #string to datetime python object (python built-in datetime library)
     new_stationref = Station.objects.get(stationid = row[2])
     new_vehicleref = Vehicle.objects.get(vehicleid = row[3])
-    new_providerabbr = new_stationref.stationprovider;
     new_charge = row[4]
 
     #If you passed from a provider's stations using said provider's tag, then the pass is a home pass
+    new_providerabbr = new_stationref.stationprovider
     new_ishome = (new_providerabbr.providerid == new_vehicleref.providerabbr.providerid)
 
-    new_pass = Pass(passid = new_passid, timestamp = new_timestamp, stationref = new_stationref, vehicleref = new_vehicleref, charge = new_charge, providerabbr = new_providerabbr, ishome = new_ishome)
+    new_pass = Pass(passid = new_passid, timestamp = new_timestamp, stationref = new_stationref, vehicleref = new_vehicleref, charge = new_charge, ishome = new_ishome)
     new_pass.save()
 
 
@@ -132,6 +140,7 @@ def admin_hardreset(response_format = 'json'):
         Provider.objects.all().delete()
         Station.objects.all().delete()
         Vehicle.objects.all().delete()
+        Tag.objects.all().delete()
         Pass.objects.all().delete()
         #Payment.objects.all().delete()
 
@@ -175,6 +184,7 @@ def admin_hardreset(response_format = 'json'):
                 try:
                     update_vehicle_from_csv_line(row)
                 except Exception as e:
+                    print(e)
                     return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         #Insert passes
@@ -308,29 +318,38 @@ class RefreshView(TokenRefreshView):
     pass
 
 
+def get_datetime_from_kwarg(kwarg_date: str) -> datetime:
+    """
+    Returns a datetime object from the kwarg_date provided
+    The expected format for kwarg_date is YYYYMMDD
+    """
+    return datetime.strptime(kwarg_date, '%Y%m%d')
+
+
 class PassesPerStation(generics.ListAPIView):
     """
     Return a list with all the passes for a given stationID and date range
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesPerStation
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         station_id = self.kwargs['stationID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         return Pass.objects.filter(stationref__stationid=station_id, timestamp__lte=date_to, timestamp__gte=date_from)
 
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.filter_queryset(self.get_queryset())
         except Exception as e:
+            print(e)
             return self.invalid_request_response
         page = self.paginate_queryset(queryset)
         station_id = self.kwargs['stationID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -353,7 +372,16 @@ class PassesPerStation(generics.ListAPIView):
             'NumberOfPasses': len(data),
             'PassesList': data
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        """
+        if len(data) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
 
     @extend_schema (
         parameters=[
@@ -475,7 +503,7 @@ class PassesAnalysis(generics.ListAPIView):
         Assuming op1_ID and op2_ID are the providerAbbr fields
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesAnalysis
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -493,8 +521,8 @@ class PassesAnalysis(generics.ListAPIView):
         op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
         op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
 
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         # Find all the vehicles with tags of op2
         op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
         # Find all the stations with tags of op1
@@ -513,8 +541,8 @@ class PassesAnalysis(generics.ListAPIView):
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
         op2_id_from_request = self.kwargs['op2_ID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -531,7 +559,16 @@ class PassesAnalysis(generics.ListAPIView):
             'NumberOfPasses': len(data),
             'PassesList': data
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        """
+        if len(data) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
 
     @extend_schema (
         responses={
@@ -640,7 +677,7 @@ class PassesCost(generics.ListAPIView):
         to the PassesAnalysis one (even though there is no listing involved in the Response)
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesAnalysis
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -657,8 +694,8 @@ class PassesCost(generics.ListAPIView):
         """
         op1_id = (Provider.objects.get(providerabbr=op1_id_from_request)).providerid
         op2_id = (Provider.objects.get(providerabbr=op2_id_from_request)).providerid
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         # Find all the vehicles with tags of op2
         op2_vehicles = Vehicle.objects.filter(providerabbr=op2_id)
         # Find all the stations with tags of op1
@@ -679,8 +716,8 @@ class PassesCost(generics.ListAPIView):
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
         op2_id_from_request = self.kwargs['op2_ID']
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -699,7 +736,16 @@ class PassesCost(generics.ListAPIView):
             'NumberOfPasses': len(data),
             'PassesCost': price
         }
-        return Response(response_data)
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        """
+        if len(data) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
 
     @extend_schema (
         responses={
@@ -803,7 +849,7 @@ class ChargesBy(generics.GenericAPIView):
         Return the amount each operator owes to the provided op_ID for a given period of time
     """
 
-    serializer_class = PassSerializer
+    serializer_class = PassSerializer_PassesAnalysis
     invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_costs_between_operators(self, op1_abbr, op2_abbr, date_from, date_to):
@@ -931,8 +977,8 @@ class ChargesBy(generics.GenericAPIView):
         op_id_from_request = self.kwargs['op_ID']
         other_operators_ids = Provider.objects.exclude(providerabbr=op_id_from_request)
 
-        date_from = self.kwargs['datefrom']
-        date_to = self.kwargs['dateto']
+        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
         costs = []
 
         for visiting_operator_id in other_operators_ids:
@@ -949,4 +995,24 @@ class ChargesBy(generics.GenericAPIView):
             'PeriodTo': date_to,
             'PPOList': costs
         }
+<<<<<<< HEAD
         return Response(response_data)
+=======
+        """
+        Check if there is no data, then return the same format but with 402 Response code
+        Returning the same format instead of eg an empty body is an implementation decision and can be changed if 
+        required by simply setting response_data to whatever the response should be
+        
+        In the current implementation for this particular endpoint there is no way that len(costs) == 0 since we are
+        not excluding operators who haven't had any passes in the specified time period
+        If this is to change, meaning we are discarding the cost objects where NumberOfPasses == 0 in the costs list
+        then this would be possible
+        Leaving it here for this exact case it is decided to change in the future and for consistency with the other
+        API endpoints 
+        """
+        if len(costs) == 0:
+            response_code = status.HTTP_402_PAYMENT_REQUIRED
+        else:
+            response_code = status.HTTP_200_OK
+        return Response(response_data, status=response_code)
+>>>>>>> master

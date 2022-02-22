@@ -252,7 +252,6 @@ class ApiLoginView(LoginView):
 	pass
 
 
-@api_view(['POST'])
 class ApiRefreshView(RefreshView):
     """
     Refreshes the lifetime of a token.

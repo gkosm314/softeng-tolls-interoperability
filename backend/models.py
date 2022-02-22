@@ -14,8 +14,15 @@ class Pass(models.Model):
     stationref = models.ForeignKey('Station', models.CASCADE, db_column='stationRef')
     vehicleref = models.ForeignKey('Vehicle', models.CASCADE, db_column='vehicleRef')
     charge = models.FloatField()
-    providerabbr = models.ForeignKey('Provider', models.CASCADE, db_column='providerAbbr')
     ishome = models.IntegerField(db_column='isHome')
+
+    def is_home_str(self):
+        """
+        Returns the string representation needed for the PassesPerStation API endpoint
+        """
+        if self.ishome:
+            return 'home'
+        return 'visitor'
 
     class Meta:
         db_table = 'Passes'
@@ -25,7 +32,10 @@ class Provider(models.Model):
     providerid = models.AutoField(db_column='providerID', primary_key=True)
     providername = models.CharField(db_column='providerName', unique=True, max_length=20)
     providerabbr = models.CharField(db_column='providerAbbr', unique=True, max_length=2)
-    isvalid = models.IntegerField(db_column='isValid')
+    isvalid = models.IntegerField(db_column='isValid', default = 1)
+
+    def __str__(self):
+        return self.providername
 
     class Meta:
         db_table = 'Providers'
@@ -35,19 +45,36 @@ class Station(models.Model):
     stationid = models.CharField(db_column='stationID', primary_key=True, max_length=10)
     stationprovider = models.ForeignKey(Provider, models.CASCADE, db_column='stationProvider')
     stationname = models.CharField(db_column='stationName', unique=True, max_length=30)
-    isvalid = models.IntegerField(db_column='isValid')
+    isvalid = models.IntegerField(db_column='isValid', default = 1)
+
+    def __str__(self):
+        return self.stationid
 
     class Meta:
         db_table = 'Stations'
 
 
+class Tag(models.Model):
+    tagid = models.CharField(db_column='tagID', primary_key=True, max_length=9)
+    tagprovider = models.CharField(db_column='tagProvider', max_length=20)
+    isvalid = models.IntegerField(db_column='isValid', default = 1)
+
+    def __str__(self):
+        return self.tagid
+
+    class Meta:
+        db_table = 'Tag'
+
+
 class Vehicle(models.Model):
     vehicleid = models.CharField(db_column='vehicleID', primary_key=True, max_length=12)
-    tagid = models.CharField(db_column='tagID', max_length=9)
-    tagprovider = models.CharField(db_column='tagProvider', max_length=20)
+    tag = models.ForeignKey(Tag, models.CASCADE, db_column='tag')
     providerabbr = models.ForeignKey(Provider, models.CASCADE, db_column='providerAbbr')
     licenseyear = models.IntegerField(db_column='licenseYear')
-    isvalid = models.IntegerField(db_column='isValid')
+    isvalid = models.IntegerField(db_column='isValid', default = 1)
+
+    def __str__(self):
+        return self.vehicleid
 
     class Meta:
         db_table = 'Vehicles'
