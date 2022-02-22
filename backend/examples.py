@@ -51,103 +51,54 @@ ourdict = {
     {
         "op1_ID": "AO",
         "op2_ID": "KO",
-        "RequestTimestamp": "2022-02-19 15:00:00",
+        "RequestTimestamp": "2022-02-22 11:19:52",
         "PeriodFrom": "2021-05-10",
-        "PeriodTo": "2021-06-10",
-        "NumberOfPasses": 10,
+        "PeriodTo": "2021-05-30",
+        "NumberOfPasses": 5,
         "PassesList": [
             {
-                "passid": "MRV8379613",
-                "timestamp": "2021-06-06T10:03:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO12",
-                "vehicleref": "DO24BCW15511",
-                "providerabbr": 1
+            "PassIndex": 1,
+            "PassID": "SMV1544228",
+            "StationID": "AO09",
+            "TimeStamp": "2021-05-22T21:07:00",
+            "VehicleID": "KB55KTM48860",
+            "Charge": "2.8"
             },
             {
-                "passid": "POA7570830",
-                "timestamp": "2021-06-09T21:27:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO05",
-                "vehicleref": "HW75BKT77773",
-                "providerabbr": 1
+            "PassIndex": 2,
+            "PassID": "GLS2058880",
+            "StationID": "AO01",
+            "TimeStamp": "2021-05-10T07:10:00",
+            "VehicleID": "QO77TFN61853",
+            "Charge": "2.8"
             },
             {
-                "passid": "SMV1544228",
-                "timestamp": "2021-05-22T21:07:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO09",
-                "vehicleref": "KB55KTM48860",
-                "providerabbr": 1
+            "PassIndex": 3,
+            "PassID": "ZLV3589994",
+            "StationID": "AO06",
+            "TimeStamp": "2021-05-29T03:47:00",
+            "VehicleID": "WY00MLL63827",
+            "Charge": "2.8"
             },
             {
-                "passid": "OII8257294",
-                "timestamp": "2021-05-31T21:05:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO18",
-                "vehicleref": "MQ65WJJ60020",
-                "providerabbr": 1
+            "PassIndex": 4,
+            "PassID": "ZXJ8435667",
+            "StationID": "AO14",
+            "TimeStamp": "2021-05-14T12:57:00",
+            "VehicleID": "YH66OKD41942",
+            "Charge": "2.8"
             },
             {
-                "passid": "GLS2058880",
-                "timestamp": "2021-05-10T07:10:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO01",
-                "vehicleref": "QO77TFN61853",
-                "providerabbr": 1
-            },
-            {
-                "passid": "NAB8968920",
-                "timestamp": "2021-06-06T17:21:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO13",
-                "vehicleref": "QW79CHL42244",
-                "providerabbr": 1
-            },
-            {
-                "passid": "CLF8749027",
-                "timestamp": "2021-06-09T06:01:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO16",
-                "vehicleref": "UO75YNW62238",
-                "providerabbr": 1
-            },
-            {
-                "passid": "ZLV3589994",
-                "timestamp": "2021-05-29T03:47:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO06",
-                "vehicleref": "WY00MLL63827",
-                "providerabbr": 1
-            },
-            {
-                "passid": "ZXJ8435667",
-                "timestamp": "2021-05-14T12:57:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO14",
-                "vehicleref": "YH66OKD41942",
-                "providerabbr": 1
-            },
-            {
-                "passid": "JSG8629778",
-                "timestamp": "2021-05-10T01:35:00",
-                "charge": 2.8,
-                "ishome": 0,
-                "stationref": "AO04",
-                "vehicleref": "ZY93PCY41868",
-                "providerabbr": 1
+            "PassIndex": 5,
+            "PassID": "JSG8629778",
+            "StationID": "AO04",
+            "TimeStamp": "2021-05-10T01:35:00",
+            "VehicleID": "ZY93PCY41868",
+            "Charge": "2.8"
             }
         ]
-    },
+    }
+    ,
 
     "PassesCost":
     {
@@ -162,30 +113,48 @@ ourdict = {
 
     "PassesPerStation":
     {
-        "Station": "EG05",
+        "Station": "EG03",
         "StationOperator": "egnatia",
-        "RequestTimestamp": "2022-02-19 15:01:38",
-        "PeriodFrom": "2020-05-01",
-        "PeriodTo": "2020-05-10",
-        "NumberOfPasses": 2,
+        "RequestTimestamp": "2022-02-22 11:31:39",
+        "PeriodFrom": "2020-04-10",
+        "PeriodTo": "2020-04-15",
+        "NumberOfPasses": 4,
         "PassesList": [
             {
-                "passid": "DFC5897825",
-                "timestamp": "2020-05-07T02:40:00",
-                "charge": 3.1,
-                "ishome": 1,
-                "stationref": "EG05",
-                "vehicleref": "TZ48CCW54765",
-                "providerabbr": 3
+            "PassIndex": 1,
+            "PassID": "HIZ9464270",
+            "PassTimeStamp": "2020-04-11T16:04:00",
+            "VehicleID": "DW44ZOO26361",
+            "TagProvider": "EG",
+            "PassType": "home",
+            "PassCharge": "2.5"
             },
             {
-                "passid": "QGD4799312",
-                "timestamp": "2020-05-07T19:29:00",
-                "charge": 3.1,
-                "ishome": 0,
-                "stationref": "EG05",
-                "vehicleref": "XV40HUQ04740",
-                "providerabbr": 3
+            "PassIndex": 2,
+            "PassID": "KAJ5037577",
+            "PassTimeStamp": "2020-04-11T16:56:00",
+            "VehicleID": "CM15YCB60994",
+            "TagProvider": "EG",
+            "PassType": "home",
+            "PassCharge": "2.0"
+            },
+            {
+            "PassIndex": 3,
+            "PassID": "PHR0622064",
+            "PassTimeStamp": "2020-04-11T22:34:00",
+            "VehicleID": "JV67MTI17124",
+            "TagProvider": "EG",
+            "PassType": "visitor",
+            "PassCharge": "1.0"
+            },
+            {
+            "PassIndex": 4,
+            "PassID": "XGI8326917",
+            "PassTimeStamp": "2020-04-13T20:35:00",
+            "VehicleID": "TE24LCO18661",
+            "TagProvider": "EG",
+            "PassType": "home",
+            "PassCharge": "1.25"
             }
         ]
     },

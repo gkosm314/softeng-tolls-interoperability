@@ -389,14 +389,14 @@ class PassesPerStation(generics.ListAPIView):
                 name='datefrom',
                 type=OpenApiTypes.DATE,
                 location=OpenApiParameter.PATH,
-                description='Date format: yyyy-mm-dd',
+                description='Date format: yyyymmdd',
                 examples=[
                     OpenApiExample(
                         'Date example',
-                        summary='short optional summary',
-                        description='longer description',
-                        value='2020-04-23'
-                    )
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='20200423'
+                    )                  
                 ]
             ),
         ],
@@ -407,8 +407,8 @@ class PassesPerStation(generics.ListAPIView):
                     'Station': serializers.CharField(),
                     'StationOperator': serializers.CharField(),
                     'RequestTimestamp': serializers.DateTimeField(),
-                    'PeriodFrom': serializers.DateTimeField(),
-                    'PeriodTo':  serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
                     'NumberOfPasses': serializers.IntegerField(),
                     'PassesList': PassSerializer_PassesPerStation()
                }
@@ -578,8 +578,8 @@ class PassesAnalysis(generics.ListAPIView):
                     'op1_ID': serializers.CharField(),
                     'op2_ID': serializers.CharField(),
                     'RequestTimestamp': serializers.DateTimeField(),
-                    'PeriodFrom': serializers.DateTimeField(),
-                    'PeriodTo':  serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
                     'NumberOfPasses': serializers.IntegerField(),
                     'PassesList': PassSerializer_PassesAnalysis()
                }
@@ -755,8 +755,8 @@ class PassesCost(generics.ListAPIView):
                     'op1_ID': serializers.CharField(),
                     'op2_ID': serializers.CharField(),
                     'RequestTimestamp': serializers.DateTimeField(),
-                    'PeriodFrom': serializers.DateTimeField(),
-                    'PeriodTo':  serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
                     'NumberOfPasses': serializers.IntegerField(),
                     'PassesCost': serializers.IntegerField()
                 }
@@ -881,8 +881,8 @@ class ChargesBy(generics.GenericAPIView):
                 fields= {
                     'op_ID': serializers.CharField(),
                     'RequestTimestamp': serializers.DateTimeField(),
-                    'PeriodFrom': serializers.DateTimeField(),
-                    'PeriodTo': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo': serializers.DateField(),
                     'PPOList': inline_serializer(
                         name='PPOList',
                         fields={

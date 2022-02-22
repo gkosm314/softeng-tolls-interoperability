@@ -154,5 +154,5 @@ SPECTACULAR_SETTINGS = {
 # Simple jwt expire time, useful for dev
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300)
 }
