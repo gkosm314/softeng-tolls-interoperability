@@ -12,7 +12,7 @@ class PassSerializer_PassesPerStation(serializers.ModelSerializer):
     PassID = serializers.CharField(source='passid')
     PassTimeStamp = serializers.DateTimeField(source='timestamp')
     VehicleID = serializers.CharField(source='vehicleref')
-    TagProvider = serializers.CharField(source='stationref.stationprovider.providerabbr')
+    TagProvider = serializers.CharField(source='vehicleref.providerabbr')
     PassType = serializers.CharField(source='is_home_str')
     PassCharge = serializers.CharField(source='charge')
     pass_index = 0
