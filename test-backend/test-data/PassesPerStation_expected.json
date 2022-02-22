@@ -1,0 +1,46 @@
+{
+  "Station": "OO01",
+  "StationOperator": "olympia_odos",
+  "RequestTimestamp": "REQUEST_TIMESTAMP",
+  "PeriodFrom": "2019-01-02",
+  "PeriodTo": "2019-01-05",
+  "NumberOfPasses": 4,
+  "PassesList": [
+    {
+      "PassIndex": 1,
+      "PassID": "GBM5773955",
+      "PassTimeStamp": "2019-01-04T08:41:00",
+      "VehicleID": "AT19HLV57173",
+      "TagProvider": "olympia_odos",
+      "PassType": "home",
+      "PassCharge": "2.8"
+    },
+    {
+      "PassIndex": 2,
+      "PassID": "JBK7975831",
+      "PassTimeStamp": "2019-01-04T22:14:00",
+      "VehicleID": "XV40HUQ04740",
+      "TagProvider": "olympia_odos",
+      "PassType": "home",
+      "PassCharge": "1.0"
+    },
+    {
+      "PassIndex": 3,
+      "PassID": "OSB6924402",
+      "PassTimeStamp": "2019-01-03T23:11:00",
+      "VehicleID": "WY00MLL63827",
+      "TagProvider": "kentriki_odos",
+      "PassType": "visitor",
+      "PassCharge": "2.8"
+    },
+    {
+      "PassIndex": 4,
+      "PassID": "QZY0176136",
+      "PassTimeStamp": "2019-01-02T10:20:00",
+      "VehicleID": "QR03XCJ37459",
+      "TagProvider": "olympia_odos",
+      "PassType": "home",
+      "PassCharge": "2.5"
+    }
+  ]
+}

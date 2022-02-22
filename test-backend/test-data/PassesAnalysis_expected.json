@@ -1,0 +1,26 @@
+{
+  "op1_ID": "AO",
+  "op2_ID": "OO",
+  "RequestTimestamp": "REQUEST_TIMESTAMP",
+  "PeriodFrom": "2019-01-02",
+  "PeriodTo": "2020-01-05",
+  "NumberOfPasses": 2,
+  "PassesList": [
+    {
+      "PassIndex": 1,
+      "PassID": "AUU6469015",
+      "StationID": "AO13",
+      "TimeStamp": "2019-01-07T06:24:00",
+      "VehicleID": "EM54HQI58682",
+      "Charge": "2.8"
+    },
+    {
+      "PassIndex": 2,
+      "PassID": "HTD0281631",
+      "StationID": "AO08",
+      "TimeStamp": "2019-01-07T19:53:00",
+      "VehicleID": "RK48BOP88344",
+      "Charge": "2.8"
+    }
+  ]
+}

@@ -122,7 +122,41 @@ def update_pass_from_csv_line(row):
     new_pass.save()
 
 
-def admin_hardreset(response_format = 'json'):
+def insert_passes_from_csv(passes_csv_path_param):
+    # Insert passes
+    with open(passes_csv_path_param) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+
+        # Skip first line(headers)
+        next(csv_reader)
+
+        # Process each line
+        for row in csv_reader:
+            try:
+                update_pass_from_csv_line(row)
+                print(row)
+            except Exception as e:
+                raise e
+    return
+
+
+def insert_providers_from_csv(providers_csv_param=providers_csv_path):
+    # Insert providers
+    with open(providers_csv_param) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+
+        # Skip first line(headers)
+        next(csv_reader)
+
+        # Process each line
+        for row in csv_reader:
+            try:
+                update_provider_from_csv_line(row)
+            except Exception as e:
+                raise e
+    return
+
+def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
     """
     Implements /admin/hardreset API call.
     Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
@@ -138,19 +172,12 @@ def admin_hardreset(response_format = 'json'):
         Tag.objects.all().delete()
         Pass.objects.all().delete()
 
-        #Insert providers
-        with open(providers_csv_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=';')
-
-            #Skip first line(headers)
-            next(csv_reader)
-
-            #Process each line
-            for row in csv_reader:
-                try:
-                    update_provider_from_csv_line(row)
-                except Exception as e:
-                    return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Insert passes
+        try:
+            insert_providers_from_csv(providers_csv_param=providers_csv_path)
+        except Exception as e:
+            print(e)
+            return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         #Insert stations
         with open(stations_csv_path) as csv_file:
@@ -181,20 +208,12 @@ def admin_hardreset(response_format = 'json'):
                     print(e)
                     return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        #Insert passes
-        with open(passes_csv_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=';')
-
-            #Skip first line(headers)
-            next(csv_reader)
-
-            #Process each line
-            for row in csv_reader:
-                try:
-                    update_pass_from_csv_line(row)
-                    print(row)
-                except Exception as e:
-                    return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Insert passes
+        try:
+            insert_passes_from_csv(passes_csv_path_param=passes_csv)
+        except Exception as e:
+            print(e)
+            return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return Response({"status": "OK"}, status.HTTP_200_OK)
 
