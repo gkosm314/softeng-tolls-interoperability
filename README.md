@@ -4,4 +4,4 @@ This is a semester project for the course _Software Engineering_ at the National
 
 It was implemented during the winter semester of the academic year 2021-2022.
 
-You can find out how to install it [here](https://github.com/ntua/TL21-55/blob/readme/doc/setup_guide.md).
+You can find out how to install it [here](https://github.com/ntua/TL21-55/blob/master/doc/setup_guide.md).

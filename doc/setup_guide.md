@@ -12,29 +12,32 @@ mysql>  CREATE DATABASE tolls_app_database;
 mysql>  CREATE USER 'tolls_root'@'localhost' IDENTIFIED BY 'tolls1234';
 mysql>  GRANT ALL PRIVILEGES ON tolls_app_database.* TO 'tolls_root'@'localhost';
 mysql>  FLUSH PRIVILEGES;
-mysql>  SER innodb_lock_wait_timeout=120;
+mysql>  SET innodb_lock_wait_timeout=120;
 mysql>  quit;
 ```
 
 
-## Step 3: Create a new folder and navigate to it. Then run:
-Create a virtual ust replace /your/path/to/cli/parser.py with the absolute path that leads to the cli/parser.py in your computer and save the changes.enviroment and clone the project's code.
+## Step 3: Setup venv and install required packages
+Create a virtual enviroment and clone the project's code. Just replace /your/path/to/cli/parser.py with the absolute path that leads to the cli/parser.py in your computer and save the changes.
 ```
 python -m venv env
 source env/bin/activate
 git clone  https://github.com/ntua/TL21-55/
 ```
-Enter your github credentials and then download the project's dependencies with:
+Enter your github credentials and then navigate to the newly created folder with `cd TL21-55` and then run: download the project's dependencies with:
 ```
 pip install -r requirements.txt
 ```
 
 If you face problems with the installation of `mysqlclient`, run:
-`sudo apt-get install python3-dev default-libmysqlclient-dev build-essential`
+
+```
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential
+```
 
 
 ## Step 4: Initialize database
-Go to the newly created folder with `cd TL21-55` and then run:
+Run:
 ```
 python manage.py makemigrations
 python manage.py migrate
@@ -44,10 +47,10 @@ python manage.py runserver
 
 
 ## Step 5: Setup CLI alias
-If you want to use the CLI by writing se2155 healtcheck instead of python parser.py healthcheck, add the following lines to the end of `~/.bashrc`:
+If you want to use the CLI by writing `se2155 healtcheck` instead of `python cli/parser.py healthcheck`, add the following lines to the end of `~/.bashrc`:
 ```
 SOFTENG_PROJECT_CLI_PATH=/your/path/to/cli/parser.py
-alias se2155="python $SOFTENG_PROJECT_CLI_PATH
+alias se2155="python $SOFTENG_PROJECT_CLI_PATH"
 ```
 Just replace `/your/path/to/cli/parser.py` with the absolute path that leads to the `cli/parser.py` in your computer and save the changes.
 
