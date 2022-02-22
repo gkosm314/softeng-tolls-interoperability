@@ -13,7 +13,6 @@ class TestHardReset(TestCase):
     def setUpTestData(cls):
         sample_csv = 'backend/test_data/test_sample_passes.csv'
         admin_hardreset(passes_csv=sample_csv)
-        print(f"{'*'*50}RUN{'*'*50}")
 
     def test_passes_inserted(self):
         self.assertNotEqual(Pass.objects.all().count(), 0, 'There are no Passes in the db')
@@ -29,3 +28,24 @@ class TestHardReset(TestCase):
 
     def test_tags_inserted(self):
         self.assertNotEqual(Tag.objects.all().count(), 0, 'There are no Tags in the db')
+
+
+class TestHealthCheck(TestCase):
+    def test_health_check(self):
+        response = admin_healthcheck()
+        status = response.data['status']
+        dbconnection = response.data['dbconnection']
+        response_code = response.status_code
+        if status == 'OK':
+            """
+            If the status returned is OK we are expecting to find a url in the dbconnection string\
+            Check that it's not empty
+            """
+            self.assertNotEqual(status, '')
+            self.assertEqual(response_code, 200)
+        else:
+            """
+            Else check that the response string is 'failed' and reseponse_code is 500
+            """
+            self.assertEqual(status, 'failed')
+            self.assertEqual(response_code, 500)
