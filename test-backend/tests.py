@@ -1,8 +1,13 @@
+import json
+
 from django.test import TestCase, Client, RequestFactory
 from django.contrib.auth.models import User
 from backend.models import Pass, Station, Provider, Vehicle, Tag
 from backend.backend import *
 # Create your tests here.
+
+
+sample_csv = 'test-backend/test-data/test_sample_passes.csv'
 
 
 class TestHardReset(TestCase):
@@ -11,7 +16,6 @@ class TestHardReset(TestCase):
     """
     @classmethod
     def setUpTestData(cls):
-        sample_csv = 'backend/test_data/test_sample_passes.csv'
         admin_hardreset(passes_csv=sample_csv)
 
     def test_passes_inserted(self):
@@ -65,7 +69,7 @@ class TestResetPasses(TestCase):
         """
         Inserts passes in the db and then calls admin_resetpasses to verify they are deleted
         """
-        sample_csv = 'backend/test_data/test_sample_passes.csv'
+
         admin_hardreset(passes_csv=sample_csv)
         admin_resetpasses()
         self.assertEqual(Pass.objects.all().count(), 0)
@@ -164,3 +168,37 @@ class TestResetVehicles(TestCase):
         new_vehicle.save()
         admin_resetvehicles()
         self.assertEqual(Vehicle.objects.get(vehicleid=new_vehicleid).isvalid, 0)
+
+
+class TestPassesPerStation(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Call admin_hardreset in order to put the sample data in the database
+        """
+        admin_hardreset(passes_csv=sample_csv)
+        return
+
+    def test_response_returned(self):
+        """
+        Generate a request using on the /interoperability/api/PassesPerStation/ view and verify that the output
+        is the one expected
+        Assumes that the correct output already exists on the file test-backend/test-data/PassesPerStation_expected.json
+        with the only change being the RequestTimestamp field which must be set to 'REQUEST_TIMESTAMP'
+        """
+        factory = RequestFactory()
+        station = 'OO01'
+        datefrom = '20190102'
+        dateto = '20190105'
+        with open('test-backend/test-data/PassesPerStation_expected.json', 'r') as f:
+            expected_result = json.load(f)
+        request_path = f"/interoperability/api/PassesPerStation/{station}/{datefrom}/{dateto}"
+        request = factory.get(request_path)
+        response = PassesPerStation.as_view()(request, stationID=station, datefrom=datefrom, dateto=dateto)
+        # Check that the response is not None
+        self.assertIsNotNone(response)
+        # Check that the response object is indeed of type Response
+        self.assertEqual(type(response), Response)
+        response.data['RequestTimestamp'] = "REQUEST_TIMESTAMP"
+        # This field is ignored because it depends on the time of the request
+        self.assertJSONEqual(json.dumps(response.data, default=str), expected_result)
