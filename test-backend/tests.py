@@ -186,11 +186,12 @@ class TestPassesPerStation(TestCase):
         Assumes that the correct output already exists on the file test-backend/test-data/PassesPerStation_expected.json
         with the only change being the RequestTimestamp field which must be set to 'REQUEST_TIMESTAMP'
         """
+        expected_path = 'test-backend/test-data/PassesPerStation_expected.json'
         factory = RequestFactory()
         station = 'OO01'
         datefrom = '20190102'
         dateto = '20190105'
-        with open('test-backend/test-data/PassesPerStation_expected.json', 'r') as f:
+        with open(expected_path, 'r') as f:
             expected_result = json.load(f)
         request_path = f"/interoperability/api/PassesPerStation/{station}/{datefrom}/{dateto}"
         request = factory.get(request_path)
