@@ -51,7 +51,45 @@ class TestHealthCheck(TestCase):
             self.assertEqual(response_code, 200)
         else:
             """
-            Else check that the response string is 'failed' and reseponse_code is 500
+            Else check that the response string is 'failed' and response_code is 500
             """
             self.assertEqual(status, 'failed')
             self.assertEqual(response_code, 500)
+
+
+class TestResetPasses(TestCase):
+    """
+    Implements testing of the admin_resetpasses functionality
+    """
+    def test_passes_are_deleted(self):
+        """
+        Inserts passes in the db and then calls admin_resetpasses to verify they are deleted
+        """
+        sample_csv = 'backend/test_data/test_sample_passes.csv'
+        admin_hardreset(passes_csv=sample_csv)
+        admin_resetpasses()
+        self.assertEqual(Pass.objects.all().count(), 0)
+
+    def test_superuser_is_deleted(self):
+        """
+        Makes sure the existing superusers are deleted after a call to admin_resetpasses
+        """
+        username = 'RandomSuperUser'
+        # Insert a random superuser on the database
+        User.objects.create_superuser(username, 'RandomSuperUser@email.com', 'RandomSuperUserPassword')
+        user_exists = User.objects.filter(username=username).exists()
+        self.assertTrue(user_exists)
+        admin_resetpasses()
+        # Make sure the superuser is deleted
+        user_exists = User.objects.filter(username=username).exists()
+        self.assertFalse(user_exists)
+
+    def test_superuser_is_created(self):
+        """
+        Makes sure a superuser is created after a call to admin_resetpasses
+        """
+        username = 'admin'
+        admin_resetpasses()
+        # Make sure the superuser with name admin is created
+        user_exists = User.objects.filter(username=username).exists()
+        self.assertTrue(user_exists)
