@@ -93,3 +93,37 @@ class TestResetPasses(TestCase):
         # Make sure the superuser with name admin is created
         user_exists = User.objects.filter(username=username).exists()
         self.assertTrue(user_exists)
+
+
+class TestResetStations(TestCase):
+    """
+    Implements testing of the admin_resetstations functionality
+    """
+
+    def test_all_stations_valid(self):
+        """
+        If we call admin_resetstations on an empty db then we should have only the stations we entered and therefore \
+        they should be valid
+        """
+        insert_providers_from_csv()  # we need to insert the providers first because of foreign key constraints
+        admin_resetstations()
+        # Test that there are no invalid stations
+        self.assertEqual(Station.objects.filter(isvalid=0).count(), 0)
+        # Test that there are some valid stations to verify the call worked
+        self.assertNotEqual(Station.objects.filter(isvalid=1).count(), 0)
+
+    def test_station_becomes_invalid(self):
+        """
+        Insert a custom station that is not included in the csv file and make it valid
+        admin_resetstations must make it invalid
+        """
+        insert_providers_from_csv()  # we need to insert the providers first because of foreign key constraints
+        new_stationid = 'TestID'
+        new_stationprovider = Provider.objects.all()[0]  # grab one provider
+        new_stationname = 'TestNAME'
+
+        new_station = Station(stationid=new_stationid, stationprovider=new_stationprovider, stationname=new_stationname,
+                              isvalid=1)
+        new_station.save()
+        admin_resetstations()
+        self.assertEqual(Station.objects.get(stationid=new_stationid).isvalid, 0)
