@@ -11,6 +11,9 @@ from os import mkdir
 
 
 def statistics_home(request):
+    """
+    Implements /interoperability/statistics (without results)
+    """
 
     providers_options_dict = get_providers_names()
 
@@ -21,20 +24,28 @@ def statistics_home(request):
 
 
 def statistics_dashboard(request, **kwargs):
+    """
+    Implements /interoperability/statistics (with results)
+    This view also passes data to the chartjs script in the template
+    """
 
     providers_options_dict = get_providers_names()
 
+    #Ensure that the passed parameters are okey
     if not valid_search_url(providers_options_dict, **kwargs):
         context = {'providers_options': providers_options_dict}
         return render(request, 'frontend/error.html', context)
 
+    #Queries database and extracts data related to the station chart
     stations_labels_and_data = count_passes_per_station(kwargs['provider_Abbr'], kwargs['datefrom'], kwargs['dateto'])
-    stations_labels_list = list(stations_labels_and_data.keys())
-    stations_data_list = list(stations_labels_and_data.values())
+    stations_labels_list = list(stations_labels_and_data.keys())    #List with all the station ids
+    stations_data_list = list(stations_labels_and_data.values())    #List with the corresponding data (#passes per station)
 
+    #Queries database and extracts data related to the pie chart
+    #total_passes = #passes
     (pie_labels_and_data, total_passes) = count_passes_from_each_provider(kwargs['provider_Abbr'], kwargs['datefrom'], kwargs['dateto'])
-    pie_labels_list = list(pie_labels_and_data.keys())
-    pie_data_list = list(pie_labels_and_data.values())
+    pie_labels_list = list(pie_labels_and_data.keys()) #List with all the provider abbrs
+    pie_data_list = list(pie_labels_and_data.values()) #List with the corresponding data (#passes per provider)
 
     context = {
         'providers_options': providers_options_dict,
@@ -55,17 +66,28 @@ def statistics_dashboard(request, **kwargs):
 
 
 def get_providers_names():
+    """
+    Returns a dictionary that contains entries of the form "AO": "attiki odos" for every provider in the database
+    """
+
     return {i.providerabbr:i.providername for i in Provider.objects.all()}
 
 
 def count_passes_per_station(my_provider_parameter, date_from, date_to):
+    """
+    Returns a dictionary with entries of the form "AO13": 34 (#passes per station)
+    An entry exists for every provider whose tags where used to pay Passes of the provider specified by my_provider_parameter in the given period.
+    """
 
+    #qs_passes = queryset which contains all the Passes from the stations owned by provider_abbr_parameter in the given period
     my_provider_id = Provider.objects.get(providerabbr = my_provider_parameter).providerid
     qs_stations = Station.objects.filter(stationprovider = my_provider_id).all()
     qs_passes = Pass.objects.filter(stationref__stationprovider__providerid = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
 
+    #Initialize each stations's counter to 0
     passes_per_station = {s.stationid:0 for s in qs_stations}
 
+    #For each station, count each passes
     for s in qs_stations:
         passes_per_station[s.stationid] = qs_passes.filter(stationref__stationid = s.stationid).count()
 
@@ -73,19 +95,26 @@ def count_passes_per_station(my_provider_parameter, date_from, date_to):
 
 
 def count_passes_from_each_provider(my_provider_parameter, date_from, date_to):
+    """
+    Returns i) a dictionary with entries of the form "AO": 34 (#passes per provider)
+    An entry exists for every station of the provider specified by my_provider_parameter in the given period.
+    """
 
-    #QuerySet which contains all the Passes from the stations owned by provider_abbr_parameter
+    #qs_passes = queryset which contains all the Passes from the stations owned by provider_abbr_parameter in the given period
     my_provider_id = Provider.objects.get(providerabbr = my_provider_parameter).providerid
     qs_providers = Provider.objects.all()
     qs_passes = Pass.objects.filter(stationref__stationprovider__providerid = my_provider_id, timestamp__lte = date_to, timestamp__gte = date_from)
 
+    #Initialize each provider's counter to 0
     passes_per_provider = {prov.providerabbr:0 for prov in qs_providers}
     total_passes_counter = 0
 
+    #For each provider, count each passes and add them to the total passes
     for p in qs_providers:
         passes_per_provider[p.providerabbr] = qs_passes.filter(vehicleref__providerabbr__providerabbr = p.providerabbr).count()
         total_passes_counter += passes_per_provider[p.providerabbr]
 
+    #Remove providers with no passes from the dictionary that will be returned
     for k,v in passes_per_provider:
         if v == 0:
             del passes_per_provider[k]
@@ -94,6 +123,12 @@ def count_passes_from_each_provider(my_provider_parameter, date_from, date_to):
 
 
 def random_rgb_color_generator(n):
+    """
+    Generates N random colors, where N is a function parameter.
+    Random colors are generated by producing three random numbers in the range 0-255 (red-green-blue)
+    Each color is represented in by string in the format accepted by chartjs
+    Returns a list of strings.
+    """
 
     list_with_rgb_strings = []
 
@@ -107,10 +142,15 @@ def random_rgb_color_generator(n):
 
 
 def valid_search_url(providers_options_dict_parameter, **kwargs):
+    """
+    Ensures that a url which expects to generate charts has passed valid parameters
+    """
 
+    #Check that the provider exists in the database
     if not kwargs['provider_Abbr'] in providers_options_dict_parameter:
         return False
 
+    #Check that the dates have the expected format
     try:
         datetime.strptime(kwargs['dateto'], "%Y-%m-%d")
         datetime.strptime(kwargs['datefrom'], "%Y-%m-%d")
@@ -122,6 +162,11 @@ def valid_search_url(providers_options_dict_parameter, **kwargs):
 
 
 def handle_file(f):
+    """
+    Handles a file from a request.
+    Receives request.FILES['file'] as a parameter. Raises an Exception if something goes wrong.
+    """
+
     #Check that the file has a .csv extension and extract its name and extension
     (file_name, file_extension) = splitext(f.name)
     if file_extension != '.csv':
@@ -167,18 +212,23 @@ def handle_file(f):
 
 
 def upload_passes_view(request):
+    """
+    View for the page with the upload file form
+    """
 
     if request.method == 'POST':
-        #For http POST request, get the filled form
+        #For http POST request, get the form with the submited data
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                #Handle the file. If something goes wrong an exception will be raised
+                #Process the file. If something goes wrong an exception will be raised
                 handle_file(request.FILES['file'])
             except Exception as e:
+                #Problem occured => redirect to failures page
                 print(e)
                 return HttpResponseRedirect('failed_upload')
             else:
+                #No problems => redirect to success page
                 return HttpResponseRedirect('successful_upload')
 
     else:
@@ -190,10 +240,18 @@ def upload_passes_view(request):
 
 
 def successful_upload_view(request): 
+    """
+    View for the page we get redirected to if the upload is successful
+    """
+
     context = {}
     return render(request, 'frontend/successful_upload.html', context)      
 
 
 def failed_upload_view(request): 
+    """
+    View for the page we get redirected to if the upload fails
+    """
+
     context = {}
     return render(request, 'frontend/failed_upload.html', context)              
