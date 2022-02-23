@@ -1,0 +1,3 @@
+Creating new user CliTestUsername...
+Could not create new user CliTestUsername.
+Error: (1062, "Duplicate entry 'CliTestUsername' for key 'auth_user.username'")

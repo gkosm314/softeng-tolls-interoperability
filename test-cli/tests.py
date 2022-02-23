@@ -73,7 +73,9 @@ class TestCliCreateUser(TestCase):
         # Make sure the user exists
         cli_create_user(self.username, self.password)
         self.user = User.objects.get(username=self.username)
-        self.error_msg = """Could not create new user CliTestUsername.Error: (1062, "Duplicate entry 'CliTestUsername' for key 'auth_user.username'")"""
+        # Error message should be on test-cli/create_user_error.txt file
+        with open('test-cli/create_user_error.txt', 'r') as f:
+            self.error_msg = f.read()
 
     def test_user_is_created(self):
         """
@@ -93,11 +95,10 @@ class TestCliCreateUser(TestCase):
         The exception is handled by the function but we can get notified by the message
         """
         f = io.StringIO()
-        # with redirect_stdout(f):
-        #     cli_create_user(self.username, self.password)
-        # s = f.getvalue()
-        cli_create_user(self.username, self.password)
-        # print(s)
+        with redirect_stdout(f):
+            cli_create_user(self.username, self.password)
+        s = f.getvalue()
+        self.assertEqual(s, self.error_msg)
 
     def tearDown(self) -> None:
         """
