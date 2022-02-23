@@ -1,0 +1,1483 @@
+openapi: 3.0.3
+info:
+  title: Interoperability
+  version: 1.0.0
+  description: An implementation of the interoperability of tolls
+paths:
+  /interoperability/api/ChargesBy/{op_ID}/{datefrom}/{dateto}:
+    get:
+      operationId: ChargesBy_retrieve
+      description: Returns the amount each operator owes to the provided op_ID for
+        a given date range.
+      parameters:
+      - in: path
+        name: datefrom
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200412'
+            summary: Date example
+      - in: path
+        name: dateto
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200429'
+            summary: Date example
+      - in: path
+        name: op_ID
+        schema:
+          type: string
+        description: "Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+        required: true
+        examples:
+          OperatorExample:
+            value: NE
+            summary: Operator example
+      tags:
+      - ChargesBy
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargesBy 200'
+              examples:
+                Successful:
+                  value:
+                    op_ID: AO
+                    RequestTimestamp: '2022-02-18 16:27:55'
+                    PeriodFrom: '2020-10-01'
+                    PeriodTo: '2020-10-10'
+                    PPOList:
+                    - VisitingOperator: EG
+                      NumberOfPasses: 5
+                      PassesCost: 14.0
+                    - VisitingOperator: GF
+                      NumberOfPasses: 3
+                      PassesCost: 8.399999999999999
+                    - VisitingOperator: KO
+                      NumberOfPasses: 3
+                      PassesCost: 8.399999999999999
+                    - VisitingOperator: MR
+                      NumberOfPasses: 1
+                      PassesCost: 2.8
+                    - VisitingOperator: NE
+                      NumberOfPasses: 3
+                      PassesCost: 8.399999999999999
+                    - VisitingOperator: OO
+                      NumberOfPasses: 8
+                      PassesCost: 22.400000000000002
+                  description: An example of a successful endpoint call.
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargesBy 400'
+              examples:
+                BadRequest:
+                  value:
+                    status: failed
+                  summary: Bad request
+                  description: An example of a failed endpoint call due to bad request.
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status code 401'
+              examples:
+                NoCredentials:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: No credentials
+                  description: Output when credentials are not provided.
+                InvalidToken:
+                  value:
+                    detail: Given token not valid for any token type
+                    code: token_not_valid
+                    messages:
+                    - token_class: AccessToken
+                      token_type: access
+                      message: Token is invalid or expired
+                  summary: Invalid Token
+                  description: Token is invalid.
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+              examples:
+                Forbidden:
+                  value:
+                    detail: 'Permission denied: The user doesn''t belong to the correct
+                      group for this provider'
+                  description: In this example the user requests data that he cannot
+                    access.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargesBy 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/PassesAnalysis/{op1_ID}/{op2_ID}/{datefrom}/{dateto}:
+    get:
+      operationId: PassesAnalysis_list
+      description: |-
+        Returns a list with all the passes from stations owned by operator 1 that were performed by vehicles with tags provided by operator 2 within a date range.
+
+        Note: op1_ID and op2_ID are providerAbbr values.
+      parameters:
+      - in: path
+        name: datefrom
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200412'
+            summary: Date example
+      - in: path
+        name: dateto
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200429'
+            summary: Date example
+      - in: path
+        name: op1_ID
+        schema:
+          type: string
+        description: "Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+        required: true
+        examples:
+          Operator1Example:
+            value: AO
+            summary: Operator 1 example
+      - in: path
+        name: op2_ID
+        schema:
+          type: string
+        description: "Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+        required: true
+        examples:
+          Operator2Example:
+            value: KO
+            summary: Operator 2 example
+      tags:
+      - PassesAnalysis
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PassesAnalysis 200'
+              examples:
+                Successful:
+                  value:
+                    op1_ID: AO
+                    op2_ID: KO
+                    RequestTimestamp: '2022-02-22 11:19:52'
+                    PeriodFrom: '2021-05-10'
+                    PeriodTo: '2021-05-30'
+                    NumberOfPasses: 5
+                    PassesList:
+                    - PassIndex: 1
+                      PassID: SMV1544228
+                      StationID: AO09
+                      TimeStamp: '2021-05-22T21:07:00'
+                      VehicleID: KB55KTM48860
+                      Charge: '2.8'
+                    - PassIndex: 2
+                      PassID: GLS2058880
+                      StationID: AO01
+                      TimeStamp: '2021-05-10T07:10:00'
+                      VehicleID: QO77TFN61853
+                      Charge: '2.8'
+                    - PassIndex: 3
+                      PassID: ZLV3589994
+                      StationID: AO06
+                      TimeStamp: '2021-05-29T03:47:00'
+                      VehicleID: WY00MLL63827
+                      Charge: '2.8'
+                    - PassIndex: 4
+                      PassID: ZXJ8435667
+                      StationID: AO14
+                      TimeStamp: '2021-05-14T12:57:00'
+                      VehicleID: YH66OKD41942
+                      Charge: '2.8'
+                    - PassIndex: 5
+                      PassID: JSG8629778
+                      StationID: AO04
+                      TimeStamp: '2021-05-10T01:35:00'
+                      VehicleID: ZY93PCY41868
+                      Charge: '2.8'
+                  description: An example of a successful endpoint call.
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesAnalysis 400'
+              examples:
+                BadRequest:
+                  value:
+                    status: failed
+                  summary: Bad request
+                  description: An example of a failed endpoint call due to bad request.
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status code 401'
+              examples:
+                NoCredentials:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: No credentials
+                  description: Output when credentials are not provided.
+                InvalidToken:
+                  value:
+                    detail: Given token not valid for any token type
+                    code: token_not_valid
+                    messages:
+                    - token_class: AccessToken
+                      token_type: access
+                      message: Token is invalid or expired
+                  summary: Invalid Token
+                  description: Token is invalid.
+          description: ''
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesAnalysis 402'
+              examples:
+                NoData:
+                  value:
+                    op1_ID: AO
+                    op2_ID: KO
+                    RequestTimestamp: '2022-02-22 20:02:28'
+                    PeriodFrom: '2020-04-25'
+                    PeriodTo: '2020-04-20'
+                    NumberOfPasses: 0
+                    PassesList: []
+                  summary: No data
+                  description: An example where the response contains no data.
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+              examples:
+                Forbidden:
+                  value:
+                    detail: 'Permission denied: The user doesn''t belong to the correct
+                      group for this provider'
+                  description: In this example the user requests data that he cannot
+                    access.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesAnalysis 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/PassesCost/{op1_ID}/{op2_ID}/{datefrom}/{dateto}:
+    get:
+      operationId: PassesCost_list
+      description: |-
+        Returns the (aggregated) cost of passes from stations owned by operator 1 performed by vehicles with tags provided by operator 2 within a date range.
+
+        Note: op1_ID and op2_ID are providerAbbr values.
+      parameters:
+      - in: path
+        name: datefrom
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200412'
+            summary: Date example
+      - in: path
+        name: dateto
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200429'
+            summary: Date example
+      - in: path
+        name: op1_ID
+        schema:
+          type: string
+        description: "Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+        required: true
+        examples:
+          Operator1Example:
+            value: AO
+            summary: Operator 1 example
+      - in: path
+        name: op2_ID
+        schema:
+          type: string
+        description: "Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+        required: true
+        examples:
+          Operator2Example:
+            value: KO
+            summary: Operator 2 example
+      tags:
+      - PassesCost
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PassesCost 200'
+              examples:
+                Successful:
+                  value:
+                    op1_ID: AO
+                    op2_ID: EG
+                    RequestTimestamp: '2022-02-19 15:00:50'
+                    PeriodFrom: '2021-10-05'
+                    PeriodTo: '2021-10-10'
+                    NumberOfPasses: 2
+                    PassesCost: 5.6
+                  description: An example of a successful endpoint call.
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesCost 400'
+              examples:
+                BadRequest:
+                  value:
+                    status: failed
+                  summary: Bad request
+                  description: An example of a failed endpoint call due to bad request.
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status code 401'
+              examples:
+                NoCredentials:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: No credentials
+                  description: Output when credentials are not provided.
+                InvalidToken:
+                  value:
+                    detail: Given token not valid for any token type
+                    code: token_not_valid
+                    messages:
+                    - token_class: AccessToken
+                      token_type: access
+                      message: Token is invalid or expired
+                  summary: Invalid Token
+                  description: Token is invalid.
+          description: ''
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesCost 402'
+              examples:
+                NoData:
+                  value:
+                    op1_ID: AO
+                    op2_ID: KO
+                    RequestTimestamp: '2022-02-22 20:08:32'
+                    PeriodFrom: '2020-04-30'
+                    PeriodTo: '2020-04-29'
+                    NumberOfPasses: 0
+                    PassesCost: 0
+                  summary: No data
+                  description: An example where the response contains no data.
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+              examples:
+                Forbidden:
+                  value:
+                    detail: 'Permission denied: The user doesn''t belong to the correct
+                      group for this provider'
+                  description: In this example the user requests data that he cannot
+                    access.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesCost 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/PassesPerStation/{stationID}/{datefrom}/{dateto}:
+    get:
+      operationId: PassesPerStation_list
+      description: Returns a list with all the passes for a given stationID within
+        a date range.
+      parameters:
+      - in: path
+        name: datefrom
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200412'
+            summary: Date example
+      - in: path
+        name: dateto
+        schema:
+          type: string
+          format: date
+        description: 'Date format: yyyymmdd'
+        required: true
+        examples:
+          DateExample:
+            value: '20200429'
+            summary: Date example
+      - in: path
+        name: stationID
+        schema:
+          type: string
+        required: true
+        examples:
+          StationIDExample:
+            value: AO01
+            summary: StationID example
+      tags:
+      - PassesPerStation
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PassesPerStation 200'
+              examples:
+                Successful:
+                  value:
+                    Station: EG03
+                    StationOperator: egnatia
+                    RequestTimestamp: '2022-02-22 19:10:58'
+                    PeriodFrom: '2020-04-10'
+                    PeriodTo: '2020-04-15'
+                    NumberOfPasses: 4
+                    PassesList:
+                    - PassIndex: 1
+                      PassID: HIZ9464270
+                      PassTimeStamp: '2020-04-11T16:04:00'
+                      VehicleID: DW44ZOO26361
+                      TagProvider: egnatia
+                      PassType: home
+                      PassCharge: '2.5'
+                    - PassIndex: 2
+                      PassID: KAJ5037577
+                      PassTimeStamp: '2020-04-11T16:56:00'
+                      VehicleID: CM15YCB60994
+                      TagProvider: egnatia
+                      PassType: home
+                      PassCharge: '2.0'
+                    - PassIndex: 3
+                      PassID: PHR0622064
+                      PassTimeStamp: '2020-04-11T22:34:00'
+                      VehicleID: JV67MTI17124
+                      TagProvider: nea_odos
+                      PassType: visitor
+                      PassCharge: '1.0'
+                    - PassIndex: 4
+                      PassID: XGI8326917
+                      PassTimeStamp: '2020-04-13T20:35:00'
+                      VehicleID: TE24LCO18661
+                      TagProvider: egnatia
+                      PassType: home
+                      PassCharge: '1.25'
+                  description: An example of a successful endpoint call.
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesPerStation 400'
+              examples:
+                BadRequest:
+                  value:
+                    status: failed
+                  summary: Bad request
+                  description: An example of a failed endpoint call due to bad request.
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status code 401'
+              examples:
+                NoCredentials:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: No credentials
+                  description: Output when credentials are not provided.
+                InvalidToken:
+                  value:
+                    detail: Given token not valid for any token type
+                    code: token_not_valid
+                    messages:
+                    - token_class: AccessToken
+                      token_type: access
+                      message: Token is invalid or expired
+                  summary: Invalid Token
+                  description: Token is invalid.
+          description: ''
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesPerStation 402'
+              examples:
+                NoData:
+                  value:
+                    Station: MR01
+                    StationOperator: moreas
+                    RequestTimestamp: '2022-02-22 19:45:09'
+                    PeriodFrom: '2020-04-30'
+                    PeriodTo: '2020-04-20'
+                    NumberOfPasses: 0
+                    PassesList: []
+                  summary: No data
+                  description: An example where the response contains no data.
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'
+              examples:
+                Forbidden:
+                  value:
+                    detail: 'Permission denied: The user doesn''t belong to the correct
+                      group for this provider'
+                  description: In this example the user requests data that he cannot
+                    access.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassesPerStation 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/admin/hardreset:
+    post:
+      operationId: admin_hardreset_create
+      description: |-
+        Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
+
+        Note: this API call takes a lot of time to finish, since it inserts over 30000 passes in the database
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hardreset 200'
+              examples:
+                Successful:
+                  value:
+                    status: OK
+                  description: An example of a successful endpoint call.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hardreset 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/admin/healthcheck:
+    get:
+      operationId: admin_healthcheck_retrieve
+      description: Ensures that we are connected to the database.
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/healthcheck 200'
+              examples:
+                Successful:
+                  value:
+                    status: OK
+                    dbconnection: mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database
+                  description: An example of a successful endpoint call.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/healthcheck 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                    dbconnection: mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/admin/resetpasses:
+    post:
+      operationId: admin_resetpasses_create
+      description: Deletes all Pass entries from the database, deletes all superusers
+        and initializes a unique superuser.
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resetpasses 200'
+              examples:
+                Successful:
+                  value:
+                    status: OK
+                  description: An example of a successful endpoint call.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resetpasses 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/admin/resetstations:
+    post:
+      operationId: admin_resetstations_create
+      description: Flags all Station entries as invalid and then enters all the station
+        in the sample data as valid stations.
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resetstations 200'
+              examples:
+                Successful:
+                  value:
+                    status: OK
+                  description: An example of a successful endpoint call.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resetstations 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/admin/resetvehicles:
+    post:
+      operationId: admin_resetvehicles_create
+      description: Flags all Vehicle entries as invalid and then enters all the vehicles
+        in the sample data as valid vehicles.
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resetvehicles 200'
+              examples:
+                Successful:
+                  value:
+                    status: OK
+                  description: An example of a successful endpoint call.
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resetvehicles 500'
+              examples:
+                InternalServerError:
+                  value:
+                    status: failed
+                  summary: Internal server error
+                  description: Internal server error
+          description: ''
+  /interoperability/api/login:
+    post:
+      operationId: login_create
+      description: |-
+        Perfroms user login.
+
+        Returns a unique token the user will use to make API calls that require authentication.
+      tags:
+      - login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /interoperability/api/refresh:
+    post:
+      operationId: refresh_create
+      description: Refreshes the lifetime of a token.
+      tags:
+      - refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /interoperability/api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    401 Invalid Token:
+      type: object
+      properties:
+        detail:
+          type: string
+        code:
+          type: string
+        messages:
+          $ref: '#/components/schemas/messages'
+      required:
+      - code
+      - detail
+      - messages
+    401 No credentials:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    '403':
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    ChargesBy 200:
+      type: object
+      properties:
+        op_ID:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        PPOList:
+          $ref: '#/components/schemas/PPOList'
+      required:
+      - PPOList
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - op_ID
+    ChargesBy 400:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    ChargesBy 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PPOList:
+      type: object
+      properties:
+        VisitingOperator:
+          type: string
+        NumberOfPasses:
+          type: integer
+        PassesCost:
+          type: number
+          format: float
+      required:
+      - NumberOfPasses
+      - PassesCost
+      - VisitingOperator
+    PassSerializer_PassesAnalysis:
+      type: object
+      description: |-
+        A custom serializer for the Pass model, to be used on the PassesPerStation API endpoint
+        Changing field names and transforming some values
+      properties:
+        PassIndex:
+          type: integer
+          readOnly: true
+        PassID:
+          type: string
+        StationID:
+          type: string
+        TimeStamp:
+          type: string
+          format: date-time
+        VehicleID:
+          type: string
+        Charge:
+          type: string
+      required:
+      - Charge
+      - PassID
+      - PassIndex
+      - StationID
+      - TimeStamp
+      - VehicleID
+    PassSerializer_PassesPerStation:
+      type: object
+      description: |-
+        A custom serializer for the Pass model, to be used on the PassesPerStation API endpoint
+        Changing field names and transforming some values
+      properties:
+        PassIndex:
+          type: integer
+          readOnly: true
+        PassID:
+          type: string
+        PassTimeStamp:
+          type: string
+          format: date-time
+        VehicleID:
+          type: string
+        TagProvider:
+          type: string
+        PassType:
+          type: string
+        PassCharge:
+          type: string
+      required:
+      - PassCharge
+      - PassID
+      - PassIndex
+      - PassTimeStamp
+      - PassType
+      - TagProvider
+      - VehicleID
+    PassesAnalysis 200:
+      type: object
+      properties:
+        op1_ID:
+          type: string
+        op2_ID:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        NumberOfPasses:
+          type: integer
+        PassesList:
+          $ref: '#/components/schemas/PassSerializer_PassesAnalysis'
+      required:
+      - NumberOfPasses
+      - PassesList
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - op1_ID
+      - op2_ID
+    PassesAnalysis 400:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PassesAnalysis 402:
+      type: object
+      properties:
+        op1_ID:
+          type: string
+        op2_ID:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        NumberOfPasses:
+          type: integer
+        PassesList:
+          $ref: '#/components/schemas/PassSerializer_PassesAnalysis'
+      required:
+      - NumberOfPasses
+      - PassesList
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - op1_ID
+      - op2_ID
+    PassesAnalysis 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PassesCost 200:
+      type: object
+      properties:
+        op1_ID:
+          type: string
+        op2_ID:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        NumberOfPasses:
+          type: integer
+        PassesCost:
+          type: integer
+      required:
+      - NumberOfPasses
+      - PassesCost
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - op1_ID
+      - op2_ID
+    PassesCost 400:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PassesCost 402:
+      type: object
+      properties:
+        op1_ID:
+          type: string
+        op2_ID:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        NumberOfPasses:
+          type: integer
+        PassesCost:
+          type: integer
+      required:
+      - NumberOfPasses
+      - PassesCost
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - op1_ID
+      - op2_ID
+    PassesCost 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PassesPerStation 200:
+      type: object
+      properties:
+        Station:
+          type: string
+        StationOperator:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        NumberOfPasses:
+          type: integer
+        PassesList:
+          $ref: '#/components/schemas/PassSerializer_PassesPerStation'
+      required:
+      - NumberOfPasses
+      - PassesList
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - Station
+      - StationOperator
+    PassesPerStation 400:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    PassesPerStation 402:
+      type: object
+      properties:
+        Station:
+          type: string
+        StationOperator:
+          type: string
+        RequestTimestamp:
+          type: string
+          format: date-time
+        PeriodFrom:
+          type: string
+          format: date
+        PeriodTo:
+          type: string
+          format: date
+        NumberOfPasses:
+          type: integer
+        PassesList:
+          $ref: '#/components/schemas/PassSerializer_PassesPerStation'
+      required:
+      - NumberOfPasses
+      - PassesList
+      - PeriodFrom
+      - PeriodTo
+      - RequestTimestamp
+      - Station
+      - StationOperator
+    PassesPerStation 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    Status code 401:
+      oneOf:
+      - $ref: '#/components/schemas/401 No credentials'
+      - $ref: '#/components/schemas/401 Invalid Token'
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    hardreset 200:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    hardreset 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    healthcheck 200:
+      type: object
+      properties:
+        status:
+          type: string
+        dbconnection:
+          type: string
+      required:
+      - dbconnection
+      - status
+    healthcheck 500:
+      type: object
+      properties:
+        status:
+          type: string
+        dbconnection:
+          type: string
+      required:
+      - dbconnection
+      - status
+    messages:
+      type: object
+      properties:
+        token_class:
+          type: string
+        token_type:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - token_class
+      - token_type
+    resetpasses 200:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    resetpasses 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    resetstations 200:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    resetstations 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    resetvehicles 200:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    resetvehicles 500:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

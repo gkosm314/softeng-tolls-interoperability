@@ -1,0 +1,4 @@
+Label,# Samples,Average,Min,Max,Std. Dev.,Error %,Throughput,KB/sec,Avg. Bytes
+healthcheck,500,3106,28,16283,3620.75,0.00%,21.2,7.19,348.0
+login,500,3210,137,16400,3256.86,0.00%,21.1,15.19,738.0
+TOTAL,1000,3158,28,16400,3444.00,0.00%,42.0,22.28,543.0

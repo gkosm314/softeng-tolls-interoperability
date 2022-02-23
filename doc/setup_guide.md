@@ -35,18 +35,32 @@ If you face problems with the installation of `mysqlclient`, run:
 sudo apt-get install python3-dev default-libmysqlclient-dev build-essential
 ```
 
+## Step 4: Enable server to run over HTTPs
+Run the following commands:
+```
+sudo apt-get install wget libnss3-tools
+wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-linux-amd64
+sudo mv mkcert-v1.4.3-linux-amd64 /usr/bin/mkcert
+chmod +x /usr/bin/mkcert
+```
+With `mkcert --version` ensure that the mkcert version is 1.4.3.
+While in the TL21-55 folder run
+```
+mkcert -install
+mkcert -cert-file cert.pem -key-file key.pem localhost 127.0.0.1
+```
 
-## Step 4: Initialize database
+## Step 5: Initialize database
 Run:
 ```
 python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser (enter whatever username/password you like)
-python manage.py runserver
+python manage.py runserver_plus --cert-file cert.pem --key-file key.pem
 ```
 
 
-## Step 5: Setup CLI alias
+## Step 6: Setup CLI alias
 If you want to use the CLI by writing `se2155 healtcheck` instead of `python cli/parser.py healthcheck`, add the following lines to the end of `~/.bashrc`:
 ```
 SOFTENG_PROJECT_CLI_PATH=/your/path/to/cli/parser.py

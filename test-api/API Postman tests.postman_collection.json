@@ -1,0 +1,794 @@
+{
+	"info": {
+		"_postman_id": "3c92e08b-58d1-48bb-9d5d-a2eea7ef5e29",
+		"name": "API Postman tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Charges By retrieve",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if(!testData || testData.length == 0) {",
+							"    //console.log(\"Defining testData\");",
+							"    testData = [",
+							"        {",
+							"            \"status\": 200,",
+							"            \"op_ID\": \"OO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"{{testToken}}\",",
+							"            \"body\":",
+							"                {",
+							"                \"op_ID\": \"OO\",",
+							"                \"RequestTimestamp\": \"2022-02-23 12:30:09\",",
+							"                \"PeriodFrom\": \"2020-12-01\",",
+							"                \"PeriodTo\": \"2020-12-30\",",
+							"                \"PPOList\": [",
+							"                    {",
+							"                    \"VisitingOperator\": \"AO\",",
+							"                    \"NumberOfPasses\": 4,",
+							"                    \"PassesCost\": 8.4",
+							"                    },",
+							"                    {",
+							"                    \"VisitingOperator\": \"EG\",",
+							"                    \"NumberOfPasses\": 8,",
+							"                    \"PassesCost\": 15.799999999999999",
+							"                    },",
+							"                    {",
+							"                    \"VisitingOperator\": \"GF\",",
+							"                    \"NumberOfPasses\": 3,",
+							"                    \"PassesCost\": 7.5",
+							"                    },",
+							"                    {",
+							"                    \"VisitingOperator\": \"KO\",",
+							"                    \"NumberOfPasses\": 8,",
+							"                    \"PassesCost\": 14.600000000000001",
+							"                    },",
+							"                    {",
+							"                    \"VisitingOperator\": \"MR\",",
+							"                    \"NumberOfPasses\": 7,",
+							"                    \"PassesCost\": 13.15",
+							"                    },",
+							"                    {",
+							"                    \"VisitingOperator\": \"NE\",",
+							"                    \"NumberOfPasses\": 8,",
+							"                    \"PassesCost\": 11.2",
+							"                    }",
+							"                ]",
+							"            }",
+							"        },",
+							"        {",
+							"            \"status\": 400,",
+							"            \"op_ID\": \"OO\",",
+							"            \"datefrom\": \"2020-12-01\",",
+							"            \"dateto\": \"2020-12-30\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 401,",
+							"            \"op_ID\": \"OO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"\",                        // Notice that no token is provided",
+							"        },",
+							"        {",
+							"            \"status\": 403,",
+							"            \"op_ID\": \"OO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"{{Token403}}\",",
+							"        },",
+							"    ];",
+							"}",
+							"",
+							"var currentTest = testData.shift();",
+							" //console.log(currentTest);",
+							"pm.environment.set(\"testData\", testData);",
+							"pm.environment.set(\"currentTest\", currentTest);",
+							"pm.environment.set(\"op_ID\", currentTest.op_ID);",
+							"pm.environment.set(\"datefrom\", currentTest.datefrom);",
+							"pm.environment.set(\"dateto\", currentTest.dateto);",
+							"pm.environment.set(\"Token\", currentTest.token);",
+							"pm.environment.set(\"response_Body\", currentTest.body);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if (testData && testData.length > 0){",
+							"    postman.setNextRequest(\"Charges By retrieve\");",
+							"    //console.log(\"Staying here\");",
+							"    // currentTest = pm.collectionVariables.get(\"currentTest\");",
+							"}",
+							"",
+							"//console.log(pm.environment.get(\"currentTest\"));",
+							"pm.test(\"Status code is as expected\", function () {",
+							"    pm.response.to.have.status(pm.environment.get(\"currentTest\").status);",
+							"});",
+							"",
+							"var response_Body = pm.environment.get(\"response_Body\");",
+							"",
+							"if(response_Body){",
+							"    pm.test(\"Response body is correct\", function () {",
+							"        var jsonData = pm.response.json();",
+							"        delete jsonData.RequestTimestamp;",
+							"        delete response_Body.RequestTimestamp;",
+							"        //console.log(jsonData);",
+							"        //console.log(response_Body);",
+							"        pm.expect(jsonData).to.eql(response_Body);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/interoperability/api/ChargesBy/:op_ID/:datefrom/:dateto",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"interoperability",
+						"api",
+						"ChargesBy",
+						":op_ID",
+						":datefrom",
+						":dateto"
+					],
+					"variable": [
+						{
+							"key": "op_ID",
+							"value": "{{op_ID}}",
+							"description": "(Required) Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+						},
+						{
+							"key": "datefrom",
+							"value": "{{datefrom}}",
+							"description": "(Required) Date format: yyyymmdd"
+						},
+						{
+							"key": "dateto",
+							"value": "{{dateto}}",
+							"description": "(Required) Date format: yyyymmdd"
+						}
+					]
+				},
+				"description": "Returns the amount each operator owes to the provided op_ID for a given date range."
+			},
+			"response": []
+		},
+		{
+			"name": "Passes Analysis list",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if(!testData || testData.length == 0) {",
+							"    //console.log(\"Defining testData\");",
+							"    testData = [",
+							"        {",
+							"            \"status\": 200,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"{{testToken}}\",",
+							"            \"body\":",
+							"                {",
+							"                \"op1_ID\": \"OO\",",
+							"                \"op2_ID\": \"AO\",",
+							"                \"RequestTimestamp\": \"2022-02-23 12:17:57\",",
+							"                \"PeriodFrom\": \"2020-12-01\",",
+							"                \"PeriodTo\": \"2020-12-30\",",
+							"                \"NumberOfPasses\": 4,",
+							"                \"PassesList\": [",
+							"                    {",
+							"                    \"PassIndex\": 1,",
+							"                    \"PassID\": \"JOT9289357\",",
+							"                    \"StationID\": \"OO01\",",
+							"                    \"TimeStamp\": \"2020-12-28T21:08:00\",",
+							"                    \"VehicleID\": \"DV04FQL29609\",",
+							"                    \"Charge\": \"1.5\"",
+							"                    },",
+							"                    {",
+							"                    \"PassIndex\": 2,",
+							"                    \"PassID\": \"JWS0552167\",",
+							"                    \"StationID\": \"OO08\",",
+							"                    \"TimeStamp\": \"2020-12-19T22:35:00\",",
+							"                    \"VehicleID\": \"LG64ARC91224\",",
+							"                    \"Charge\": \"2.8\"",
+							"                    },",
+							"                    {",
+							"                    \"PassIndex\": 3,",
+							"                    \"PassID\": \"JZL1434442\",",
+							"                    \"StationID\": \"OO11\",",
+							"                    \"TimeStamp\": \"2020-12-14T22:26:00\",",
+							"                    \"VehicleID\": \"RR73DWB65452\",",
+							"                    \"Charge\": \"3.1\"",
+							"                    },",
+							"                    {",
+							"                    \"PassIndex\": 4,",
+							"                    \"PassID\": \"TZH0688348\",",
+							"                    \"StationID\": \"OO05\",",
+							"                    \"TimeStamp\": \"2020-12-22T01:04:00\",",
+							"                    \"VehicleID\": \"RR73DWB65452\",",
+							"                    \"Charge\": \"1.0\"",
+							"                    }",
+							"                ]",
+							"                }",
+							"        },",
+							"        {",
+							"            \"status\": 400,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"2020-12-01\",",
+							"            \"dateto\": \"2020-12-30\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 401,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"\",                        // Notice that no token is provided",
+							"        },",
+							"        {",
+							"            \"status\": 402,                      // datefrom > dateto",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201230\",",
+							"            \"dateto\": \"20201225\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 403,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"{{Token403}}\",",
+							"        },    ",
+							"    ];",
+							"}",
+							"",
+							"var currentTest = testData.shift();",
+							" //console.log(currentTest);",
+							"pm.environment.set(\"testData\", testData);",
+							"pm.environment.set(\"currentTest\", currentTest);",
+							"pm.environment.set(\"op1_ID\", currentTest.op1_ID);",
+							"pm.environment.set(\"op2_ID\", currentTest.op2_ID);",
+							"pm.environment.set(\"datefrom\", currentTest.datefrom);",
+							"pm.environment.set(\"dateto\", currentTest.dateto);",
+							"pm.environment.set(\"Token\", currentTest.token);",
+							"pm.environment.set(\"response_Body\", currentTest.body);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if (testData && testData.length > 0){",
+							"    postman.setNextRequest(\"Passes Analysis list\");",
+							"    //console.log(\"Staying here\");",
+							"    // currentTest = pm.collectionVariables.get(\"currentTest\");",
+							"}",
+							"",
+							"//console.log(pm.environment.get(\"currentTest\"));",
+							"pm.test(\"Status code is as expected\", function () {",
+							"    pm.response.to.have.status(pm.environment.get(\"currentTest\").status);",
+							"});",
+							"",
+							"var response_Body = pm.environment.get(\"response_Body\");",
+							"",
+							"if(response_Body){",
+							"    pm.test(\"Response body is correct\", function () {",
+							"        var jsonData = pm.response.json();",
+							"        delete jsonData.RequestTimestamp;",
+							"        delete response_Body.RequestTimestamp;",
+							"        //console.log(jsonData);",
+							"        //console.log(response_Body);",
+							"        pm.expect(jsonData).to.eql(response_Body);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/interoperability/api/PassesAnalysis/:op1_ID/:op2_ID/:datefrom/:dateto",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"interoperability",
+						"api",
+						"PassesAnalysis",
+						":op1_ID",
+						":op2_ID",
+						":datefrom",
+						":dateto"
+					],
+					"variable": [
+						{
+							"key": "op1_ID",
+							"value": "{{op1_ID}}",
+							"description": "(Required) Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+						},
+						{
+							"key": "op2_ID",
+							"value": "{{op2_ID}}",
+							"description": "(Required) Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+						},
+						{
+							"key": "datefrom",
+							"value": "{{datefrom}}",
+							"description": "(Required) Date format: yyyymmdd"
+						},
+						{
+							"key": "dateto",
+							"value": "{{dateto}}",
+							"description": "(Required) Date format: yyyymmdd"
+						}
+					]
+				},
+				"description": "Returns a list with all the passes from stations owned by operator 1 that were performed by vehicles with tags provided by operator 2 within a date range.\n\nNote: op1_ID and op2_ID are providerAbbr values."
+			},
+			"response": []
+		},
+		{
+			"name": "Passes Per Station list",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if(!testData || testData.length == 0) {",
+							"    //console.log(\"Defining testData\");",
+							"    testData = [",
+							"        {",
+							"            \"status\": 200,              // Path parameter values used for test: /OO01/20201201/20201210",
+							"            \"stationID\": \"OO01\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201210\",",
+							"            \"token\": \"{{testToken}}\",",
+							"            \"body\":",
+							"                {",
+							"                \"Station\": \"OO01\",",
+							"                \"StationOperator\": \"olympia_odos\",",
+							"                \"RequestTimestamp\": \"2022-02-22 12:45:49\",",
+							"                \"PeriodFrom\": \"2020-12-01\",",
+							"                \"PeriodTo\": \"2020-12-10\",",
+							"                \"NumberOfPasses\": 2,",
+							"                \"PassesList\": [",
+							"                    {",
+							"                    \"PassIndex\": 1,",
+							"                    \"PassID\": \"VPR3084021\",",
+							"                    \"PassTimeStamp\": \"2020-12-07T18:27:00\",",
+							"                    \"VehicleID\": \"JF94VYA88954\",",
+							"                    \"TagProvider\": \"olympia_odos\",",
+							"                    \"PassType\": \"home\",",
+							"                    \"PassCharge\": \"2.8\"",
+							"                    },",
+							"                    {",
+							"                    \"PassIndex\": 2,",
+							"                    \"PassID\": \"YKL4107931\",",
+							"                    \"PassTimeStamp\": \"2020-12-03T17:24:00\",",
+							"                    \"VehicleID\": \"RK48BOP88344\",",
+							"                    \"TagProvider\": \"olympia_odos\",",
+							"                    \"PassType\": \"home\",",
+							"                    \"PassCharge\": \"2.8\"",
+							"                    }",
+							"                ]",
+							"                }",
+							"        },",
+							"        {",
+							"            \"status\": 400,",
+							"            \"stationID\": \"O02\",                 // Notice that stationID is invalid",
+							"            \"datefrom\": \"2021-01-01 23:13:00\",",
+							"            \"dateto\": \"2021-04-11 23:13:00\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 401,",
+							"            \"stationID\": \"NE03\",",
+							"            \"datefrom\": \"2021-01-01 23:13:00\",",
+							"            \"dateto\": \"2021-04-11 23:13:00\",",
+							"            \"token\": \"\",                        // Notice that no token is provided",
+							"        },",
+							"        {",
+							"            \"status\": 402,                      // datefrom > dateto",
+							"            \"stationID\": \"NE03\",",
+							"            \"datefrom\": \"20210102\",",
+							"            \"dateto\": \"20210101\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 403,",
+							"            \"stationID\": \"NE03\",",
+							"            \"datefrom\": \"20210102\",",
+							"            \"dateto\": \"20210101\",",
+							"            \"token\": \"{{Token403}}\",",
+							"        },    ",
+							"    ];",
+							"}",
+							"",
+							"var currentTest = testData.shift();",
+							" //console.log(currentTest);",
+							"pm.environment.set(\"testData\", testData);",
+							"pm.environment.set(\"currentTest\", currentTest);",
+							"pm.environment.set(\"stationID\", currentTest.stationID);",
+							"pm.environment.set(\"datefrom\", currentTest.datefrom);",
+							"pm.environment.set(\"dateto\", currentTest.dateto);",
+							"pm.environment.set(\"Token\", currentTest.token);",
+							"pm.environment.set(\"response_Body\", currentTest.body);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if (testData && testData.length > 0){",
+							"    postman.setNextRequest(\"Passes Per Station list\");",
+							"    //console.log(\"Staying here\");",
+							"    // currentTest = pm.collectionVariables.get(\"currentTest\");",
+							"}",
+							"",
+							"//console.log(pm.environment.get(\"currentTest\"));",
+							"pm.test(\"Status code is as expected\", function () {",
+							"    pm.response.to.have.status(pm.environment.get(\"currentTest\").status);",
+							"});",
+							"",
+							"var response_Body = pm.environment.get(\"response_Body\");",
+							"",
+							"if(response_Body){",
+							"    pm.test(\"Response body is correct\", function () {",
+							"        var jsonData = pm.response.json();",
+							"        delete jsonData.RequestTimestamp;",
+							"        delete response_Body.RequestTimestamp;",
+							"        //console.log(jsonData);",
+							"        //console.log(response_Body);",
+							"        pm.expect(jsonData).to.eql(response_Body);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/interoperability/api/PassesPerStation/:stationID/:datefrom/:dateto",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"interoperability",
+						"api",
+						"PassesPerStation",
+						":stationID",
+						":datefrom",
+						":dateto"
+					],
+					"variable": [
+						{
+							"key": "stationID",
+							"value": "{{stationID}}",
+							"description": "(Required) "
+						},
+						{
+							"key": "datefrom",
+							"value": "{{datefrom}}",
+							"description": "(Required) Date format: yyyymmdd"
+						},
+						{
+							"key": "dateto",
+							"value": "{{dateto}}",
+							"description": "(Required) Date format: yyyymmdd"
+						}
+					]
+				},
+				"description": "Returns a list with all the passes for a given stationID within a date range."
+			},
+			"response": []
+		},
+		{
+			"name": "Passes Cost list",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if(!testData || testData.length == 0) {",
+							"    //console.log(\"Defining testData\");",
+							"    testData = [",
+							"        {",
+							"            \"status\": 200,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"{{testToken}}\",",
+							"            \"body\":",
+							"                {",
+							"                \"op1_ID\": \"OO\",",
+							"                \"op2_ID\": \"AO\",",
+							"                \"RequestTimestamp\": \"2022-02-23 11:58:51\",",
+							"                \"PeriodFrom\": \"2020-12-01\",",
+							"                \"PeriodTo\": \"2020-12-30\",",
+							"                \"NumberOfPasses\": 4,",
+							"                \"PassesCost\": 8.4",
+							"                }",
+							"        },",
+							"        {",
+							"            \"status\": 400,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"2020-12-01\",",
+							"            \"dateto\": \"2020-12-30\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 401,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"\",                        // Notice that no token is provided",
+							"        },",
+							"        {",
+							"            \"status\": 402,                      // datefrom > dateto",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201230\",",
+							"            \"dateto\": \"20201225\",",
+							"            \"token\": \"{{testToken}}\",",
+							"        },",
+							"        {",
+							"            \"status\": 403,",
+							"            \"op1_ID\": \"OO\",",
+							"            \"op2_ID\": \"AO\",",
+							"            \"datefrom\": \"20201201\",",
+							"            \"dateto\": \"20201230\",",
+							"            \"token\": \"{{Token403}}\",",
+							"        },    ",
+							"    ];",
+							"}",
+							"",
+							"var currentTest = testData.shift();",
+							" //console.log(currentTest);",
+							"pm.environment.set(\"testData\", testData);",
+							"pm.environment.set(\"currentTest\", currentTest);",
+							"pm.environment.set(\"op1_ID\", currentTest.op1_ID);",
+							"pm.environment.set(\"op2_ID\", currentTest.op2_ID);",
+							"pm.environment.set(\"datefrom\", currentTest.datefrom);",
+							"pm.environment.set(\"dateto\", currentTest.dateto);",
+							"pm.environment.set(\"Token\", currentTest.token);",
+							"pm.environment.set(\"response_Body\", currentTest.body);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var testData = pm.environment.get(\"testData\");",
+							"",
+							"if (testData && testData.length > 0){",
+							"    postman.setNextRequest(\"Passes Cost list\");",
+							"    //console.log(\"Staying here\");",
+							"    // currentTest = pm.collectionVariables.get(\"currentTest\");",
+							"}",
+							"",
+							"//console.log(pm.environment.get(\"currentTest\"));",
+							"pm.test(\"Status code is as expected\", function () {",
+							"    pm.response.to.have.status(pm.environment.get(\"currentTest\").status);",
+							"});",
+							"",
+							"var response_Body = pm.environment.get(\"response_Body\");",
+							"",
+							"if(response_Body){",
+							"    pm.test(\"Response body is correct\", function () {",
+							"        var jsonData = pm.response.json();",
+							"        delete jsonData.RequestTimestamp;",
+							"        delete response_Body.RequestTimestamp;",
+							"        //console.log(jsonData);",
+							"        //console.log(response_Body);",
+							"        pm.expect(jsonData).to.eql(response_Body);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/interoperability/api/PassesCost/:op1_ID/:op2_ID/:datefrom/:dateto",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"interoperability",
+						"api",
+						"PassesCost",
+						":op1_ID",
+						":op2_ID",
+						":datefrom",
+						":dateto"
+					],
+					"query": [
+						{
+							"key": "format",
+							"value": "csv",
+							"disabled": true
+						}
+					],
+					"variable": [
+						{
+							"key": "op1_ID",
+							"value": "{{op1_ID}}",
+							"description": "(Required) Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+						},
+						{
+							"key": "op2_ID",
+							"value": "{{op2_ID}}",
+							"description": "(Required) Operator_ID can be one of\tAO, EG, GF, KO, MR, NE, OO."
+						},
+						{
+							"key": "datefrom",
+							"value": "{{datefrom}}",
+							"description": "(Required) Date format: yyyymmdd"
+						},
+						{
+							"key": "dateto",
+							"value": "{{dateto}}",
+							"description": "(Required) Date format: yyyymmdd"
+						}
+					]
+				},
+				"description": "Returns the (aggregated) cost of passes from stations owned by operator 1 performed by vehicles with tags provided by operator 2 within a date range.\n\nNote: op1_ID and op2_ID are providerAbbr values."
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "testToken",
+			"value": "Superuser token",
+			"type": "string"
+		},
+		{
+			"key": "Token403",
+			"value": "Token obtained by a user with limited permissions e.g. belonging to group KO",
+			"type": "string"
+		}
+	]
+}
