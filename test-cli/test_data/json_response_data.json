@@ -1,0 +1,42 @@
+{
+            "op1_ID": "OO",
+            "op2_ID": "EG",
+            "RequestTimestamp": "2022-02-23 15:28:36",
+            "PeriodFrom": "2020-01-01",
+            "PeriodTo": "2020-02-02",
+            "NumberOfPasses": 4,
+            "PassesList": [
+                {
+                    "PassIndex": 1,
+                    "PassID": "ADH0486994",
+                    "StationID": "OO01",
+                    "TimeStamp": "2020-01-31T08:24:00",
+                    "VehicleID": "EC02LZC49528",
+                    "Charge": "1.0"
+                },
+                {
+                    "PassIndex": 2,
+                    "PassID": "LQH9666160",
+                    "StationID": "OO11",
+                    "TimeStamp": "2020-01-16T05:02:00",
+                    "VehicleID": "EC02LZC49528",
+                    "Charge": "1.0"
+                },
+                {
+                    "PassIndex": 3,
+                    "PassID": "SIN0687353",
+                    "StationID": "OO10",
+                    "TimeStamp": "2020-01-13T23:07:00",
+                    "VehicleID": "TZ48CCW54765",
+                    "Charge": "2.8"
+                },
+                {
+                    "PassIndex": 4,
+                    "PassID": "ZDZ1896020",
+                    "StationID": "OO09",
+                    "TimeStamp": "2020-01-18T12:10:00",
+                    "VehicleID": "XE59BZM26378",
+                    "Charge": "1.25"
+                }
+            ]
+        }
