@@ -2,6 +2,13 @@ from django.shortcuts import render
 from backend.models import *
 from random import randint
 from datetime import datetime
+from django.http import HttpResponseRedirect
+from .forms import UploadFileForm
+import csv, sys
+from backend.backend import update_pass_from_csv_line
+from os.path import splitext, join, dirname, realpath
+from os import mkdir
+
 
 def statistics_home(request):
 
@@ -112,3 +119,81 @@ def valid_search_url(providers_options_dict_parameter, **kwargs):
         return False
     else:
         return True
+
+
+
+
+def handle_file(f):
+    #Check that the file has a .csv extension
+    if splitext(f.name)[1] != '.csv':
+        raise Exception("Error: the file must be a .csv file")
+
+    #Directory where the uploaded csv files are saved
+    target_dir = join(dirname(realpath(__file__)), 'uploaded_files')
+
+    #If the aforementioned directory does not exist, create it
+    try:
+        mkdir(target_dir)
+    except FileExistsError:
+        pass
+    except Exception as e:
+        raise e
+
+    #Path of the new file that will be saved locally
+    new_file_name = join(target_dir, f.name)
+
+    #Open the file and copy the uploaded file's content inside it
+    with open(new_file_name, 'wb+') as target_file:
+        for chunk in f.chunks():
+            target_file.write(chunk)
+
+    #Parse the csv file and insert Passes
+    with open(new_file_name) as csv_file:
+        #Initialize csv reader
+        csv_reader = csv.reader(csv_file, delimiter=';')
+
+        #Skip first line(headers)
+        next(csv_reader)
+
+        #Process each line
+        for row in csv_reader:
+            try:
+                update_pass_from_csv_line(row)
+                print(row)
+            except Exception as e:
+                print("An unexpected error occured.")
+                print("Error: {}".format(e))
+                raise e
+
+
+def upload_passes_view(request):
+
+    if request.method == 'POST':
+        #For http POST request, get the filled form
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                #Handle the file. If something goes wrong an exception will be raised
+                handle_file(request.FILES['file'])
+            except Exception as e:
+                print(e)
+                return HttpResponseRedirect('failed_upload')
+            else:
+                return HttpResponseRedirect('successful_upload')
+
+    else:
+        #For http GET request, just return the form empty
+        form = UploadFileForm()   
+
+    context = {'form_var': form}
+    return render(request, 'frontend/upload.html', context)
+
+
+def successful_upload_view(request): 
+    context = {}
+    return render(request, 'frontend/successful_upload.html', context)      
+
+
+def failed_upload_view(request): 
+    context = {}
+    return render(request, 'frontend/failed_upload.html', context)              
