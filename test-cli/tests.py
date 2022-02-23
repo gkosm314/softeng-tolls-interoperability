@@ -7,6 +7,7 @@ import io
 from argparse import Namespace
 from rest_framework.response import Response
 from django.http import HttpResponse
+from cli.parser import *
 # Create your tests here.
 
 
@@ -208,3 +209,84 @@ class TestOutputExtractor(TestCase):
         http_response = HttpResponse(self.csv_response)
         ret = output_extractor(http_response, format_parameter='csv')
         self.assertEqual(self.csv_response, ret)
+
+
+class TestValidDateFormat(TestCase):
+    """
+    Tests the valid_date_format function
+    valid_date_format(d)
+    """
+    def setUp(self) -> None:
+        """
+        Setup correct and wrong dates
+        """
+        self.correct_date = '20200101'
+        self.wrong_date = '2020-01-01'
+
+    def test_wrong_date_format(self):
+        """
+        Test that an exception is thrown in case of a wrong date format
+        """
+        try:
+            valid_date_format(self.wrong_date)
+            self.assertTrue(False, 'No exception was thrown for wrong date format')
+        except ArgumentTypeError:
+            self.assertTrue(True)
+
+    def test_correct_date_format(self):
+        """
+        Test that no exception is thrown in case of correct date format
+        """
+        try:
+            valid_date_format(self.correct_date)
+            self.assertTrue(True)
+        except ArgumentTypeError:
+            self.assertTrue(False, 'An exception was thrown for correct date format')
+
+    def test_correct_date_is_returned(self):
+        """
+        Test that the date is returned as it is without any modifications in case of no error
+        """
+        ret = valid_date_format(self.correct_date)
+        self.assertEqual(ret, self.correct_date)
+
+
+class TestValidUsernameFormat(TestCase):
+    """
+    Tests the valid_date_format function
+    valid_date_format(d)
+    """
+    def setUp(self) -> None:
+        """
+        Setup correct and wrong usernames and the expected return value following iso-8859-1
+        """
+        self.correct_username = 'ParserTestUsername'
+        self.wrong_username = 'Δεν είναι δεκτό'
+        self.correct_return = self.correct_username.encode("iso-8859-1")
+
+    def test_wrong_username_format(self):
+        """
+        Test that an exception is thrown in case of a wrong username format
+        """
+        try:
+            valid_username_format(self.wrong_username)
+            self.assertTrue(False, 'No exception was thrown for wrong username format')
+        except:
+            self.assertTrue(True)
+
+    def test_correct_date_format(self):
+        """
+        Test that no exception is thrown in case of correct username format
+        """
+        try:
+            valid_username_format(self.correct_username)
+            self.assertTrue(True)
+        except ArgumentTypeError:
+            self.assertTrue(False, 'An exception was thrown for correct username format')
+
+    def test_correct_date_is_returned(self):
+        """
+        Test that the date is returned as it is without any modifications in case of no error
+        """
+        ret = valid_username_format(self.correct_username)
+        self.assertEqual(ret, self.correct_return)
