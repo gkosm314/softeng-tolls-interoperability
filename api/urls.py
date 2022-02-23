@@ -15,10 +15,10 @@ urlpatterns = [
     path('login', views.ApiLoginView.as_view(), name="login_url"),
     path('refresh', views.ApiRefreshView.as_view(), name="refresh_url"),
 
-    path('PassesPerStation/<stationID>/<datefrom>/<dateto>', views.ApiPassesPerStation.as_view(), name='passes_per_station'),
-    path('PassesAnalysis/<op1_ID>/<op2_ID>/<datefrom>/<dateto>', views.ApiPassesAnalysis.as_view(), name='passes_analysis'),
-    path('PassesCost/<op1_ID>/<op2_ID>/<datefrom>/<dateto>', views.ApiPassesCost.as_view(), name='passes_analysis'),
-    path('ChargesBy/<op_ID>/<datefrom>/<dateto>', views.ApiChargesBy.as_view(), name='passes_analysis'),
+    path('PassesPerStation/<str:stationID>/<str:datefrom>/<str:dateto>', views.ApiPassesPerStation.as_view(), name='passes_per_station'),
+    path('PassesAnalysis/<str:op1_ID>/<str:op2_ID>/<str:datefrom>/<str:dateto>', views.ApiPassesAnalysis.as_view(), name='passes_analysis'),
+    path('PassesCost/<str:op1_ID>/<str:op2_ID>/<str:datefrom>/<str:dateto>', views.ApiPassesCost.as_view(), name='passes_analysis'),
+    path('ChargesBy/<str:op_ID>/<str:datefrom>/<str:dateto>', views.ApiChargesBy.as_view(), name='passes_analysis'),
 
     # Schema urls
     path('schema/', SpectacularAPIView.as_view(), name='schema'),

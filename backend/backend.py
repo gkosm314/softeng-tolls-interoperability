@@ -1,3 +1,5 @@
+from dataclasses import fields
+from unicodedata import name
 from django.shortcuts import render
 from django.db import transaction, connection
 from django.contrib.auth.models import User
@@ -9,9 +11,12 @@ from .models import Pass, Provider, Station, Vehicle, Tag
 import csv
 from datetime import datetime
 from .serializers import PassSerializer_PassesPerStation, PassSerializer_PassesAnalysis ,StationSerializer
-from rest_framework import generics
+from rest_framework import generics, serializers
 from django.db.models import Sum
+from . import examples
 
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer, PolymorphicProxySerializer, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 #Note: Django REST Framework's Response object can handle both JSON and CSV responses
 
@@ -171,6 +176,7 @@ def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
         Vehicle.objects.all().delete()
         Tag.objects.all().delete()
         Pass.objects.all().delete()
+        #Payment.objects.all().delete()
 
         # Insert passes
         try:
@@ -339,6 +345,96 @@ def get_datetime_from_kwarg(kwarg_date: str) -> datetime:
     return datetime.strptime(kwarg_date, '%Y%m%d')
 
 
+DATE_FROM = OpenApiParameter(
+                name='datefrom',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.PATH,
+                description='Date format: yyyymmdd',
+                examples=[
+                    OpenApiExample(
+                        'Date example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='20200412'
+                    )                  
+                ],
+)
+
+DATE_TO = OpenApiParameter(
+                name='dateto',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.PATH,
+                description='Date format: yyyymmdd',
+                examples=[
+                    OpenApiExample(
+                        'Date example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='20200429'
+                    )                  
+                ],
+)
+
+OP1_ID = OpenApiParameter(
+                name='op1_ID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Operator_ID can be one of	AO, EG, GF, KO, MR, NE, OO.',
+                examples=[
+                    OpenApiExample(
+                        'Operator 1 example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='AO'
+                    )                  
+                ],
+)
+
+OP2_ID = OpenApiParameter(
+                name='op2_ID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Operator_ID can be one of	AO, EG, GF, KO, MR, NE, OO.',
+                examples=[
+                    OpenApiExample(
+                        'Operator 2 example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='KO'
+                    )                  
+                ],
+)
+
+OP_ID = OpenApiParameter(
+                name='op_ID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Operator_ID can be one of	AO, EG, GF, KO, MR, NE, OO.',
+                examples=[
+                    OpenApiExample(
+                        'Operator example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='NE'
+                    )                  
+                ],
+)
+
+STATION_ID = OpenApiParameter(
+                name='stationID',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='',
+                examples=[
+                    OpenApiExample(
+                        'StationID example',
+                        #summary='short optional summary',
+                        #description='longer description',
+                        value='AO01'
+                    )                  
+                ],
+)
+
 class PassesPerStation(generics.ListAPIView):
     """
     Return a list with all the passes for a given stationID and date range
@@ -395,6 +491,139 @@ class PassesPerStation(generics.ListAPIView):
         else:
             response_code = status.HTTP_200_OK
         return Response(response_data, status=response_code)
+
+    @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            STATION_ID
+        ],
+        responses={
+            200: inline_serializer(
+                name='PassesPerStation 200',
+                fields={
+                    'Station': serializers.CharField(),
+                    'StationOperator': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer_PassesPerStation()
+               }
+            ),
+            400: inline_serializer(
+                name='PassesPerStation 400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+            401: PolymorphicProxySerializer(
+                component_name='Status code 401',
+                serializers=[
+                    inline_serializer(
+                        name="401 No credentials",
+                        fields={
+                            "detail": serializers.CharField()
+                        }
+                    ),
+                    inline_serializer(
+                        name='401 Invalid Token',
+                        fields={
+                            "detail": serializers.CharField(),
+                            "code": serializers.CharField(),
+                            "messages": inline_serializer(
+                                name="messages",
+                                fields={
+                                    "token_class": serializers.CharField(),
+                                    "token_type": serializers.CharField(),
+                                    "message": serializers.CharField()
+                                }
+                            )
+                        }
+                    )
+                ],
+                resource_type_field_name= None,
+            ),
+            402: inline_serializer(
+                name="PassesPerStation 402",
+                fields={
+                    'Station': serializers.CharField(),
+                    'StationOperator': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer_PassesPerStation()
+               }
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),
+            500: inline_serializer(
+                name='PassesPerStation 500',
+                fields={
+                    'status': serializers.CharField()
+                }
+            )
+        },
+        examples=[
+            OpenApiExample(
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["PassesPerStation"],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
+            ),
+            OpenApiExample(
+                "No credentials",
+                description="Output when credentials are not provided.",
+                value=examples.ourdict["Unauthorized_noCredentials"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Invalid Token",
+                description="Token is invalid.",
+                value=examples.ourdict["Unauthorized_invalidToken"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "No data",
+                description="An example where the response contains no data.",
+                value=examples.ourdict["PassesPerStation 402"],
+                response_only=True,
+                status_codes=["402"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
+            ),
+            OpenApiExample(
+                "Internal server error",
+                description="Internal server error",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["500"]
+            )
+
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
 class PassesAnalysis(generics.ListAPIView):
@@ -471,6 +700,139 @@ class PassesAnalysis(generics.ListAPIView):
             response_code = status.HTTP_200_OK
         return Response(response_data, status=response_code)
 
+    @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            OP1_ID,
+            OP2_ID
+        ],
+        responses={
+            200: inline_serializer(
+                name='PassesAnalysis 200',
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer_PassesAnalysis()
+               }
+            ),
+            400: inline_serializer(
+                name='PassesAnalysis 400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+            401: PolymorphicProxySerializer(
+                component_name='Status code 401',
+                serializers=[
+                    inline_serializer(
+                        name="401 No credentials",
+                        fields={
+                         "detail": serializers.CharField()
+                        }
+                    ),
+                    inline_serializer(
+                        name='401 Invalid Token',
+                        fields={
+                            "detail": serializers.CharField(),
+                            "code": serializers.CharField(),
+                            "messages": inline_serializer(
+                                name="messages",
+                                fields={
+                                    "token_class": serializers.CharField(),
+                                    "token_type": serializers.CharField(),
+                                    "message": serializers.CharField()
+                                }
+                            )
+                        }
+                    )
+                ],
+                resource_type_field_name= None,
+            ),
+            402: inline_serializer(
+                name="PassesAnalysis 402",
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesList': PassSerializer_PassesAnalysis()
+               }
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),                        
+            500: inline_serializer(
+                name='PassesAnalysis 500',
+                fields={
+                    'status': serializers.CharField()
+                }
+            )
+        },
+        examples=[
+            OpenApiExample(
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["PassesAnalysis"],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
+            ),
+            OpenApiExample(
+                "No credentials",
+                description="Output when credentials are not provided.",
+                value=examples.ourdict["Unauthorized_noCredentials"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Invalid Token",
+                description="Token is invalid.",
+                value=examples.ourdict["Unauthorized_invalidToken"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "No data",
+                description="An example where the response contains no data.",
+                value=examples.ourdict["PassesAnalysis 402"],
+                response_only=True,
+                status_codes=["402"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
+            ),
+            OpenApiExample(
+                "Internal server error",
+                description="Internal server error",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["500"]
+            )
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
 
 class PassesCost(generics.ListAPIView):
     """
@@ -508,6 +870,7 @@ class PassesCost(generics.ListAPIView):
         op1_stations = Station.objects.filter(stationprovider=op1_id)
         qs = Pass.objects.filter(timestamp__lte=date_to, timestamp__gte=date_from, stationref__in=op1_stations, vehicleref__in=op2_vehicles)
         return qs
+
 
     def list(self, request, *args, **kwargs):
         """
@@ -552,6 +915,140 @@ class PassesCost(generics.ListAPIView):
             response_code = status.HTTP_200_OK
         return Response(response_data, status=response_code)
 
+    @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            OP1_ID,
+            OP2_ID
+        ],
+        responses={
+            200: inline_serializer(
+                name='PassesCost 200',
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesCost': serializers.IntegerField()
+                }
+            ),
+            400: inline_serializer(
+                name='PassesCost 400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+            401: PolymorphicProxySerializer(
+                component_name='Status code 401',  
+                serializers=[
+                    inline_serializer(
+                        name="401 No credentials",
+                        fields={
+                         "detail": serializers.CharField()
+                        }
+                    ),
+                    inline_serializer(
+                        name='401 Invalid Token',
+                        fields={
+                            "detail": serializers.CharField(),
+                            "code": serializers.CharField(),
+                            "messages": inline_serializer(
+                                name="messages",
+                                fields={
+                                    "token_class": serializers.CharField(),
+                                    "token_type": serializers.CharField(),
+                                    "message": serializers.CharField()
+                                }
+                            )
+                        }
+                    )
+                ],
+                resource_type_field_name= None,
+            ),
+            402: inline_serializer(
+                name="PassesCost 402",
+                fields= {
+                    'op1_ID': serializers.CharField(),
+                    'op2_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo':  serializers.DateField(),
+                    'NumberOfPasses': serializers.IntegerField(),
+                    'PassesCost': serializers.IntegerField()
+                }
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),                        
+            500: inline_serializer(
+                name='PassesCost 500',
+                fields={
+                    'status': serializers.CharField()
+                }
+            )
+        },
+        examples=[
+            OpenApiExample(
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["PassesCost"],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
+            ),
+            OpenApiExample(
+                "No credentials",
+                description="Output when credentials are not provided.",
+                value=examples.ourdict["Unauthorized_noCredentials"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Invalid Token",
+                description="Token is invalid.",
+                value=examples.ourdict["Unauthorized_invalidToken"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "No data",
+                description="An example where the response contains no data.",
+                value=examples.ourdict["PassesCost 402"],
+                response_only=True,
+                status_codes=["402"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
+            ),
+            OpenApiExample(
+                "Internal server error",
+                description="Internal server error",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["500"]
+            )
+        ],
+    )
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
 
 class ChargesBy(generics.GenericAPIView):
     """
@@ -583,6 +1080,121 @@ class ChargesBy(generics.GenericAPIView):
         }
         return response_data
 
+    @extend_schema (
+        parameters=[
+            DATE_FROM,
+            DATE_TO,
+            OP_ID
+        ],
+        responses={
+            200: inline_serializer(
+                name='ChargesBy 200',
+                fields= {
+                    'op_ID': serializers.CharField(),
+                    'RequestTimestamp': serializers.DateTimeField(),
+                    'PeriodFrom': serializers.DateField(),
+                    'PeriodTo': serializers.DateField(),
+                    'PPOList': inline_serializer(
+                        name='PPOList',
+                        fields={
+                        'VisitingOperator': serializers.CharField(),
+                        'NumberOfPasses': serializers.IntegerField(),
+                        'PassesCost': serializers.FloatField()
+                        }
+            )
+               }
+            ),
+            400: inline_serializer(
+                name='ChargesBy 400',
+                fields={
+                    'status': serializers.CharField()
+                }
+            ),
+            401: PolymorphicProxySerializer(
+                component_name='Status code 401',   
+                serializers=[
+                    inline_serializer(
+                        name="401 No credentials",
+                        fields={
+                         "detail": serializers.CharField()
+                        }
+                    ),
+                    inline_serializer(
+                        name='401 Invalid Token',
+                        fields={
+                            "detail": serializers.CharField(),
+                            "code": serializers.CharField(),
+                            "messages": inline_serializer(
+                                name="messages",
+                                fields={
+                                    "token_class": serializers.CharField(),
+                                    "token_type": serializers.CharField(),
+                                    "message": serializers.CharField()
+                                }
+                            )
+                        }
+                    )
+                ],
+                resource_type_field_name= None,
+            ),
+            403: inline_serializer(
+                name="403",
+                fields={
+                    'detail': serializers.CharField()
+                }
+            ),
+            500: inline_serializer(
+                name='ChargesBy 500',
+                fields={
+                    'status': serializers.CharField()
+                }
+            )
+        },
+        examples=[
+            OpenApiExample(
+                "Successful",
+                description="An example of a successful endpoint call.",
+                value=examples.ourdict["ChargesBy"],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "Bad request",
+                description="An example of a failed endpoint call due to bad request.",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["400"],
+            ),
+            OpenApiExample(
+                "No credentials",
+                description="Output when credentials are not provided.",
+                value=examples.ourdict["Unauthorized_noCredentials"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Invalid Token",
+                description="Token is invalid.",
+                value=examples.ourdict["Unauthorized_invalidToken"],
+                response_only=True,
+                status_codes=["401"]
+            ),
+            OpenApiExample(
+                "Forbidden",
+                description="In this example the user requests data that he cannot access.",
+                value={"detail": "Permission denied: The user doesn't belong to the correct group for this provider"},
+                response_only=True,
+                status_codes=["403"]
+            ),
+            OpenApiExample(
+                "Internal server error",
+                description="Internal server error",
+                value={"status": "failed"},
+                response_only=True,
+                status_codes=["500"]
+            )
+        ],
+    )
     def get(self, request, *args, **kwargs):
 
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
