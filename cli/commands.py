@@ -52,6 +52,7 @@ def output_response_data(response_data, format, output_path_parameter):
 
     return True
 
+
 def cli_create_user(username, password):
     """
     Create new user with the given username and set his password to be the given password
@@ -83,22 +84,33 @@ def cli_change_password(user_object, username, password):
     else:
         print("Changed password of user {} successfully.".format(username))
 
+
+def output_extractor(response_object, format_parameter):
+    if format_parameter == "json":
+        return response_object.data
+    else:
+        return response_object.content.decode('utf-8')
+
 #Main functions
 #These functions are called by parser.py
 def cli_admin_healthcheck(args):
-    return output_response_data(admin_healthcheck(args.format).data, args.format, args.output)
+    command_output = output_extractor(admin_healthcheck(args.format), args.format)
+    return output_response_data(command_output, args.format, args.output)
     
 
 def cli_admin_resetpasses(args):
-    return output_response_data(admin_resetpasses(args.format).data, args.format, args.output)
+    command_output = output_extractor(admin_resetpasses(args.format), args.format)
+    return output_response_data(command_output, args.format, args.output)
  
 
 def cli_admin_resetstations(args):
-    return output_response_data(admin_resetstations(args.format).data, args.format, args.output)
+    command_output = output_extractor(admin_resetstations(args.format), args.format)
+    return output_response_data(command_output, args.format, args.output)
 
 
 def cli_admin_resetvehicles(args):
-    return output_response_data(admin_resetvehicles(args.format).data, args.format, args.output)
+    command_output = output_extractor(admin_resetvehicles(args.format), args.format)
+    return output_response_data(command_output, args.format, args.output)
 
 
 def cli_login(args):
@@ -108,42 +120,58 @@ def cli_login(args):
     request = factory.post(request_path, request_data)
 
     response = LoginView.as_view()(request)
-    return output_response_data(response.data, args.format, args.output)
+    return output_response_data(response.content, args.format, args.output)
 
 
 def cli_passesperstation(args):
     factory = RequestFactory()
     request_path = f"/interoperability/api/PassesPerStation/{args.station}/{args.datefrom}/{args.dateto}"
     request = factory.get(request_path)
-
+    mycopy = request.GET.copy()
+    mycopy['format'] = args.format
+    request.GET = mycopy
     response = PassesPerStation.as_view()(request, stationID = args.station, datefrom = args.datefrom, dateto = args.dateto)
-    return output_response_data(response.data, args.format, args.output)
+    command_output = output_extractor(response, args.format)
+    return output_response_data(command_output, args.format, args.output)
+
 
 def cli_passesanalysis(args):
     factory = RequestFactory()
     request_path = f"/interoperability/api/PassesAnalysis/{args.op1}/{args.op2}/{args.datefrom}/{args.dateto}"
     request = factory.get(request_path)
-    
+
+    mycopy = request.GET.copy()
+    mycopy['format'] = args.format
+    request.GET = mycopy
+    # response = PassesAnalysis.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto, *myargs,**kwargs)
     response = PassesAnalysis.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto)
-    return output_response_data(response.data, args.format, args.output)
+    # print(f"response: {response}")
+    command_output = output_extractor(response, args.format)
+    return output_response_data(command_output, args.format, args.output)
 
 
 def cli_passescost(args):
     factory = RequestFactory()
     request_path = f"/interoperability/api/PassesCost/{args.op1}/{args.op2}/{args.datefrom}/{args.dateto}"
     request = factory.get(request_path)
-    
+    mycopy = request.GET.copy()
+    mycopy['format'] = args.format
+    request.GET = mycopy
     response = PassesCost.as_view()(request, op1_ID = args.op1, op2_ID = args.op2, datefrom = args.datefrom, dateto = args.dateto)
-    return output_response_data(response.data, args.format, args.output)
+    command_output = output_extractor(response, args.format)
+    return output_response_data(command_output, args.format, args.output)
 
 
 def cli_chargesby(args):
     factory = RequestFactory()
     request_path = f"/interoperability/api/ChargesBy/{args.op1}/{args.datefrom}/{args.dateto}"
     request = factory.get(request_path)
-    
+    mycopy = request.GET.copy()
+    mycopy['format'] = args.format
+    request.GET = mycopy
     response = ChargesBy.as_view()(request, op_ID = args.op1, datefrom = args.datefrom, dateto = args.dateto)
-    return output_response_data(response.data, args.format, args.output)
+    command_output = output_extractor(response, args.format)
+    return output_response_data(command_output, args.format, args.output)
 
 
 def cli_admin_usermod(args):
@@ -219,6 +247,7 @@ def cli_admin_passesupd(args):
             except Exception as e:
                 print("An unexpected error occured.")
                 print("Error: {}".format(e))
+
 
 def cli_admin_help():
     """
