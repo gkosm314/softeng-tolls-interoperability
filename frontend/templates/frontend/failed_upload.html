@@ -1,0 +1,33 @@
+{% extends "frontend/index.html" %}
+
+{% block form_block %}
+{% endblock form_block %}
+
+
+{% block info_message %}
+<div class="col-12">
+	<div class="alert alert-warning text-center mt-5" role="alert">
+		<i class="bi bi-x-circle-fill"></i> | <strong>Something went wrong.</strong> Please try again.
+	</div>
+</div>
+
+<div class="d-grid gap-2">
+  	<button class="btn btn-lg btn-dark" type="button" id="return_button">
+ 		<i class="bi bi-arrow-left"></i> Return
+	</button>
+</div>
+{% endblock info_message %}	
+
+{% block append_scripts_block %}
+
+<script type="text/javascript">
+const return_button = document.getElementById('return_button');
+var current_url = window.location.href;
+var base_url = current_url.substring(0, current_url.search("interoperability")) + "interoperability/";	
+
+return_button.addEventListener('click', event => {
+	window.location.href = base_url + 'upload_passes/';
+});
+</script>
+
+{% endblock append_scripts_block %}	
