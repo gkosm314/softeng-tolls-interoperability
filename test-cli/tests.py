@@ -105,3 +105,36 @@ class TestCliCreateUser(TestCase):
         Removes the user so other tests aren't impacted
         """
         self.user.delete()
+
+
+class TestCliChangePassword(TestCase):
+    """
+    Test the cli_change_password function
+    cli_change_password(user_object, username, password)
+    """
+
+    def setUp(self) -> None:
+        """
+        Creates a user to be used for each TC
+        """
+        self.username = 'CliTestUsername'
+        self.password = 'CliTestUsernamePassword123'
+        self.new_password = 'NEW_CliTestUsernamePassword123'
+        self.email = 'CliTestUsername@email.com'
+        self.user = User.objects.create_user(username=self.username,
+                                             email=self.email,
+                                             password=self.password)
+
+    def tearDown(self) -> None:
+        """
+        Deletes the user created on setup so it doesn't affect other TCs
+        """
+        self.user.delete()
+
+    def test_old_password_not_working(self):
+        cli_change_password(self.user, self.username, self.new_password)
+        self.assertFalse(self.user.check_password(self.password))
+
+    def test_new_password_working(self):
+        cli_change_password(self.user, self.username, self.new_password)
+        self.assertTrue(self.user.check_password(self.new_password))
