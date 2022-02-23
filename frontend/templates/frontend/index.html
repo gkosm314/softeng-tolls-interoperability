@@ -26,6 +26,7 @@
 	</nav>
 
 	<div class="container">
+		{% block form_block %}
 		<form class="row align-items-center rounded bg-body p-3 mt-4 shadow-sm border" id="search_form"> 
 
 			<div class="fw-lighter fs-3 mb-3 border-bottom">Search</div>
@@ -60,6 +61,7 @@
 			</div>
 
 		</form>
+		{% endblock form_block %}
 
 		<div class="row align-items-center mt-4">
 			{% block info_message %}
@@ -78,9 +80,8 @@
 
 	<script src="{% static 'frontend/js/bootstrap.bundle.min.js' %}"></script>
 	<script src="{% static 'frontend/js/jquery.js' %}"></script>
+	{% block append_scripts_block %}
 	<script src="{% static 'frontend/js/script.js' %}"></script>
-	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	{% block chartjs_script %}
-	{% endblock chartjs_script %}	
+	{% endblock append_scripts_block %}	
 </body>
 </html>

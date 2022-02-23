@@ -50,8 +50,10 @@
 </div>	
 {% endblock results %}	
 
-{% block chartjs_script %}
-
+{% block append_scripts_block %}
+{% load static %}
+<script src="{% static 'frontend/js/script.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="text/javascript">
 
 	const stations_chart_data = {
@@ -101,4 +103,4 @@
 	const pie_chart = new Chart(document.getElementById('is_home_chart'), pie_chart_config);
 </script>
 
-{% endblock chartjs_script %}	
+{% endblock append_scripts_block %}	
