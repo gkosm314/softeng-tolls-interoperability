@@ -121,11 +121,10 @@ def valid_search_url(providers_options_dict_parameter, **kwargs):
         return True
 
 
-
-
 def handle_file(f):
-    #Check that the file has a .csv extension
-    if splitext(f.name)[1] != '.csv':
+    #Check that the file has a .csv extension and extract its name and extension
+    (file_name, file_extension) = splitext(f.name)
+    if file_extension != '.csv':
         raise Exception("Error: the file must be a .csv file")
 
     #Directory where the uploaded csv files are saved
@@ -140,7 +139,8 @@ def handle_file(f):
         raise e
 
     #Path of the new file that will be saved locally
-    new_file_name = join(target_dir, f.name)
+    current_datetime_now = datetime.now().strftime("%m_%d_%Y_%H:%M:%S")
+    new_file_name = join(target_dir, file_name + '_' + current_datetime_now + file_extension)
 
     #Open the file and copy the uploaded file's content inside it
     with open(new_file_name, 'wb+') as target_file:
