@@ -1,0 +1,39 @@
+{% extends "frontend/index.html" %}
+
+{% block form_block %}
+
+<form class="row align-items-center rounded bg-body p-3 mt-4 shadow-sm border" id="search_form" method="post" enctype="multipart/form-data">  
+	<div class="fw-lighter fs-3 mb-3 border-bottom">Upload file</div>
+	
+	<div class="col-12">
+		{% csrf_token %}
+		{{ form_var }}		
+	</div>
+
+	<div class="d-grid gap-2 mt-3">
+		<input class="btn btn-lg btn-dark" type="submit" id="upload_file_button" value="Upload File">
+	</div>
+</form>
+{% endblock form_block %}
+
+
+{% block info_message %}
+<div class="col-12">
+	<div class="alert alert-primary text-center" role="alert">
+		<i class="bi bi-capslock-fill"></i> | Upload a csv file to insert passes in the database.
+	</div>
+</div>
+{% endblock info_message %}	
+
+
+{% block append_scripts_block %}
+
+<script type="text/javascript">
+const label_file_element = document.querySelector("label");
+const input_file_element = document.getElementById("id_file");
+
+label_file_element.style.display = "none";
+input_file_element.classList.add("form-control", "form-control-lg");
+</script>
+
+{% endblock append_scripts_block %}	
