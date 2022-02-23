@@ -11,7 +11,7 @@ from django.test import RequestFactory
 from backend.backend import update_pass_from_csv_line
 from backend.backend import admin_hardreset, admin_healthcheck, admin_resetpasses, admin_resetstations, admin_resetvehicles
 from backend.backend import PassesPerStation, PassesAnalysis, PassesCost, ChargesBy, LoginView
-
+from django.db import transaction
 import json
 
 #Helper functions
@@ -53,6 +53,7 @@ def output_response_data(response_data, format, output_path_parameter):
     return True
 
 
+@transaction.atomic
 def cli_create_user(username, password):
     """
     Create new user with the given username and set his password to be the given password
