@@ -5,8 +5,8 @@ from cli.commands import *
 from contextlib import redirect_stdout
 import io
 from argparse import Namespace
-
-
+from rest_framework.response import Response
+from django.http import HttpResponse
 # Create your tests here.
 
 class TestOutputResponseData(TestCase):
@@ -73,8 +73,8 @@ class TestCliCreateUser(TestCase):
         # Make sure the user exists
         cli_create_user(self.username, self.password)
         self.user = User.objects.get(username=self.username)
-        # Error message should be on test-cli/create_user_error.txt file
-        with open('test-cli/create_user_error.txt', 'r') as f:
+        # Error message should be on test-cli/test_data/create_user_error.txt file
+        with open('test-cli/test_data/create_user_error.txt', 'r') as f:
             self.error_msg = f.read()
 
     def test_user_is_created(self):
@@ -138,3 +138,43 @@ class TestCliChangePassword(TestCase):
     def test_new_password_working(self):
         cli_change_password(self.user, self.username, self.new_password)
         self.assertTrue(self.user.check_password(self.new_password))
+
+
+class TestOutputExtractor(TestCase):
+    """
+    Tests the output_extractor function
+    output_extractor(response_object, format_parameter)
+    It accepts either a drf Response object along with format_parameter = json
+    Or a django HttpResponse with format_parameter = csv
+    Test Data:
+     - test-cli/test_data/csv_response_data.txt
+     - 'test-cli/test_data/json_response_data.json'
+    """
+    def setUp(self) -> None:
+        """
+        Loads the appropriate data on the corresponding variables
+        These files are created by the backend functions and contain the raw data that are used to generate Response
+        objects
+        """
+        self.csv_path = 'test-cli/test_data/csv_response_data.txt'
+        self.json_path = 'test-cli/test_data/json_response_data.json'
+        with open(self.json_path, 'r') as f:
+            self.json_response = json.load(f)
+        with open(self.json_path, 'r') as f:
+            self.csv_response = f.read()
+
+    def test_json_response(self):
+        """
+        Test that when a DRF Response object is passed along with format_parameter='json' the returned data is correct
+        """
+        test_response = Response(self.json_response)
+        ret = output_extractor(test_response, format_parameter='json')
+        self.assertJSONEqual(json.dumps(ret), self.json_response)
+
+    def test_csv_response(self):
+        """
+        Test that when an HttpResponse object is passed along with format_parameter='csv' the returned data is correct
+        """
+        http_response = HttpResponse(self.csv_response)
+        ret = output_extractor(http_response, format_parameter='csv')
+        self.assertEqual(self.csv_response, ret)
