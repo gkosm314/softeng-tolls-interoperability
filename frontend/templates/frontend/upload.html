@@ -19,7 +19,7 @@
 
 {% block info_message %}
 <div class="col-12">
-	<div class="alert alert-primary text-center" role="alert">
+	<div class="alert alert-primary text-center" role="alert" id="upload_alert_message">
 		<i class="bi bi-capslock-fill"></i> | Upload a csv file to insert passes in the database.
 	</div>
 </div>
@@ -34,6 +34,20 @@ const input_file_element = document.getElementById("id_file");
 
 label_file_element.style.display = "none";
 input_file_element.classList.add("form-control", "form-control-lg");
+
+const button_file_element = document.getElementById("upload_file_button");
+alert_msg_element = document.getElementById("upload_alert_message");
+loading_msg_html = "<i class=\"bi bi-capslock-fill\"></i> | <b>Uploading...<b>  <span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span>"
+
+button_file_element.addEventListener('click', event => {
+	var form_is_valid = input_file_element.checkValidity();
+	if (form_is_valid) {
+		alert_msg_element.classList.remove("alert-primary");
+		alert_msg_element.classList.add("alert-dark");
+		alert_msg_element.innerHTML = loading_msg_html;
+	} 	
+});
+
 </script>
 
 {% endblock append_scripts_block %}	
