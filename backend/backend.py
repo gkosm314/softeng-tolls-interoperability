@@ -274,6 +274,7 @@ def admin_hardreset(response_format = 'json'):
 
     return response_generator({"status": "OK"}, status.HTTP_200_OK, response_format)
 
+
 def admin_healthcheck(response_format = 'json'):
     """
     Implements /admin/healthcheck API call.
