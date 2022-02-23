@@ -196,7 +196,7 @@ def insert_providers_from_csv(providers_csv_param=providers_csv_path):
     return
 
 
-def admin_hardreset(response_format = 'json'):
+def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
     """
     Implements /admin/hardreset API call.
     Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
@@ -263,7 +263,7 @@ def admin_hardreset(response_format = 'json'):
 
         # Insert passes
         try:
-            insert_passes_from_csv(passes_csv_path_param=passes_csv_path)
+            insert_passes_from_csv(passes_csv_path_param=passes_csv)
         except Exception as e:
             print(e)
             return response_generator(
