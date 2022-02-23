@@ -56,7 +56,7 @@ def response_generator(response_data, response_status, response_format_param):
     if response_format_param == 'csv':
         csv_response_data = formatted_response(response_data)
         # print(csv_response_data)
-        return HttpResponse(csv_response_data, response_status)
+        return HttpResponse(csv_response_data, status=response_status)
     else:
         return Response(response_data, status = response_status)
 
@@ -1278,9 +1278,12 @@ class ChargesBy(generics.GenericAPIView):
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         op_id_from_request = self.kwargs['op_ID']
         other_operators_ids = Provider.objects.exclude(providerabbr=op_id_from_request)
-
-        date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
-        date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
+        try:
+            date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
+            date_to = get_datetime_from_kwarg(self.kwargs['dateto']).date()
+        except Exception as e:
+            print(e)
+            return invalid_request_response
         costs = []
 
         for visiting_operator_id in other_operators_ids:
