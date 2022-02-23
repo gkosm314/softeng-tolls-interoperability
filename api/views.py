@@ -49,7 +49,7 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, exte
     ]
 )
 @api_view(['POST'])
-def api_admin_hardreset(request, response_format = 'json'):
+def api_admin_hardreset(request):
     """
 	Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
 
@@ -57,7 +57,7 @@ def api_admin_hardreset(request, response_format = 'json'):
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_hardreset(response_format)
+    return admin_hardreset(request.GET.get('format', 'json'))
 
 @extend_schema (
     responses={
@@ -100,13 +100,13 @@ def api_admin_hardreset(request, response_format = 'json'):
     ]
 )
 @api_view(['GET'])
-def api_admin_healthcheck(request, response_format = 'json'):
+def api_admin_healthcheck(request):
     """
 	Ensures that we are connected to the database.
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_healthcheck(response_format)
+    return admin_healthcheck(request.GET.get('format', 'json'))
 
 @extend_schema (
     responses={
@@ -145,13 +145,13 @@ def api_admin_healthcheck(request, response_format = 'json'):
     ]
 )
 @api_view(['POST'])
-def api_admin_resetpasses(request, response_format = 'json'):
+def api_admin_resetpasses(request):
     """
 	Deletes all Pass entries from the database, deletes all superusers and initializes a unique superuser.
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_resetpasses(response_format)
+    return admin_resetpasses(request.GET.get('format', 'json'))
 
 @extend_schema (
     responses={
@@ -190,13 +190,13 @@ def api_admin_resetpasses(request, response_format = 'json'):
     ]
 )
 @api_view(['POST'])
-def api_admin_resetstations(request, response_format = 'json'):
+def api_admin_resetstations(request):
     """
 	Flags all Station entries as invalid and then enters all the station in the sample data as valid stations.
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_resetstations(response_format)
+    return admin_resetstations(request.GET.get('format', 'json'))
 
 @extend_schema (
     responses={
@@ -235,13 +235,13 @@ def api_admin_resetstations(request, response_format = 'json'):
     ]
 )
 @api_view(['POST'])
-def api_admin_resetvehicles(request, response_format = 'json'):
+def api_admin_resetvehicles(request):
     """
 	Flags all Vehicle entries as invalid and then enters all the vehicles in the sample data as valid vehicles.
     """
     
     #Calls equivelant API call from backend/backend.py
-    return admin_resetvehicles(response_format)
+    return admin_resetvehicles(request.GET.get('format', 'json'))
 
 
 class ApiLoginView(LoginView):
