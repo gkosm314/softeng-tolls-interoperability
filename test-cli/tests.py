@@ -57,3 +57,50 @@ class TestOutputResponseData(TestCase):
         """
         if os.path.isfile(self.json_file_path):
             os.remove(self.json_file_path)
+
+
+class TestCliCreateUser(TestCase):
+    """
+    Tests the cli_create_user function
+    cli_create_user(username, password)
+    """
+
+    def setUp(self) -> None:
+        self.username = 'CliTestUsername'
+        self.password = 'CliTestUsernamePassword123'
+        # Make sure the user doesn't exist already
+        self.assertFalse(User.objects.filter(username=self.username).exists())
+        # Make sure the user exists
+        cli_create_user(self.username, self.password)
+        self.user = User.objects.get(username=self.username)
+        self.error_msg = """Could not create new user CliTestUsername.Error: (1062, "Duplicate entry 'CliTestUsername' for key 'auth_user.username'")"""
+
+    def test_user_is_created(self):
+        """
+        Tests that the function can indeed create a user
+        """
+        self.assertTrue(User.objects.filter(username=self.username).exists())
+
+    def test_password_is_correct(self):
+        """
+        Tests that the password is correct
+        """
+        self.assertTrue(self.user.check_password(self.password))
+
+    def test_user_already_exists(self):
+        """
+        If we try to create the same user we should get an exception
+        The exception is handled by the function but we can get notified by the message
+        """
+        f = io.StringIO()
+        # with redirect_stdout(f):
+        #     cli_create_user(self.username, self.password)
+        # s = f.getvalue()
+        cli_create_user(self.username, self.password)
+        # print(s)
+
+    def tearDown(self) -> None:
+        """
+        Removes the user so other tests aren't impacted
+        """
+        self.user.delete()
