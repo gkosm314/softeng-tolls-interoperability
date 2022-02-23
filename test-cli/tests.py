@@ -9,31 +9,35 @@ from rest_framework.response import Response
 from django.http import HttpResponse
 # Create your tests here.
 
+
 class TestOutputResponseData(TestCase):
     """
     Test the functionality of the output_response_data function
     output_response_data(response_data, format, output_path_parameter):
+    Test Data:
+     - test-cli/test_data/csv_response_data.txt
+     - test-cli/test_data/json_response_data.json
     """
-
     def setUp(self) -> None:
-        self.json_response = {
-            'key': 'value',
-            'PassesList': [
-                {
-                    'pk': 1,
-                    'val': 2,
-                },
-                {
-                    'pk': 2,
-                    'val': 2,
-                }
-            ]
-        }
-        self.json_file_path = 'test-cli/test.json'
+        """
+        Loads the appropriate data on the corresponding variables
+        These files are created by the backend functions and contain the raw data that are used to generate Response
+        objects
+        """
+        self.csv_path = 'test-cli/test_data/csv_response_data.txt'
+        self.json_path = 'test-cli/test_data/json_response_data.json'
+        with open(self.json_path, 'r') as f:
+            self.json_response = json.load(f)
+        with open(self.csv_path, 'r') as f:
+            self.csv_response = f.read()
+            # Remove trailing new lines
+            self.csv_response = self.csv_response.rstrip()
+        self.json_output_file = 'test-cli/test_data/json_output.json'
+        self.csv_output_file = 'test-cli/test_data/csv_output.txt'
 
     def test_output_stdout_json(self):
         """
-        Test that the output is correctly printed in the stdout
+        Test that the json output is correctly printed in the stdout
         """
         f = io.StringIO()
         with redirect_stdout(f):
@@ -41,22 +45,48 @@ class TestOutputResponseData(TestCase):
         s = f.getvalue()
         self.assertJSONEqual(json.dumps(self.json_response), s)
 
+    def test_output_stdout_csv(self):
+        """
+        Test that the csv output is correctly printed in the stdout
+        """
+        f = io.StringIO()
+        with redirect_stdout(f):
+            output_response_data(self.csv_response, format='csv', output_path_parameter='stdout')
+        s = f.getvalue()
+        # Remove trailing new lines for output
+        s = s.rstrip()
+        self.assertEqual(self.csv_response, s)
+
     def test_output_file_json(self):
         """
-         Test that the output is correctly dumped in a file
+         Test that the output is correctly dumped in a json file
          """
-        output_response_data(self.json_response, format='json', output_path_parameter=self.json_file_path)
-        self.assertTrue(os.path.isfile(self.json_file_path))
-        with open(self.json_file_path, 'r') as f:
+        output_response_data(self.json_response, format='json', output_path_parameter=self.json_output_file)
+        self.assertTrue(os.path.isfile(self.json_output_file))
+        with open(self.json_output_file, 'r') as f:
             file_content = json.load(f)
         self.assertJSONEqual(json.dumps(file_content), self.json_response)
+
+    def test_output_file_csv(self):
+        """
+         Test that the output is correctly dumped in a csv file
+         """
+        output_response_data(self.csv_response, format='csv', output_path_parameter=self.csv_output_file)
+        self.assertTrue(os.path.isfile(self.csv_output_file))
+        with open(self.csv_output_file, 'r') as f:
+            file_content = f.read()
+            file_content = file_content.rstrip()
+        self.assertEqual(self.csv_response, file_content)
+
 
     def tearDown(self):
         """
         Delete the file if it exists so future runs are not impacted
         """
-        if os.path.isfile(self.json_file_path):
-            os.remove(self.json_file_path)
+        if os.path.isfile(self.json_output_file):
+            os.remove(self.json_output_file)
+        if os.path.isfile(self.csv_output_file):
+            os.remove(self.csv_output_file)
 
 
 class TestCliCreateUser(TestCase):
