@@ -51,11 +51,12 @@ def valid_date_format(d):
 	Checks if a string has the required format (YYYYMMDD). This function is used for type checking by the main parser.
 	"""
 	try:
-		return datetime.strptime(d, "%Y%m%d")
+		datetime.strptime(d, "%Y%m%d")
 	except ValueError:
 		invalid_date_error_msg = "\nInvalid date format: Date does not follow the YYYYMMDD format.\nFor example, 2/7/1982 should be written as 19820712."
 		print(invalid_date_error_msg)
 		raise ArgumentTypeError(invalid_date_error_msg)
+	return d
 
 
 def setup_main_parser():
@@ -93,7 +94,7 @@ def setup_main_parser():
 	healthcheck_parser.set_defaults(func = commands.cli_admin_healthcheck)
 	resetpasses_parser.set_defaults(func = commands.cli_admin_resetpasses)
 	resetstations_parser.set_defaults(func = commands.cli_admin_resetstations)
-	resetstations_parser.set_defaults(func = commands.cli_admin_resetvehicles)
+	resetvehicles_parser.set_defaults(func = commands.cli_admin_resetvehicles)
 	login_parser.set_defaults(func = commands.cli_login)
 	passesperstation_parser.set_defaults(func = commands.cli_passesperstation)
 	passesanalysis_parser.set_defaults(func = commands.cli_passesanalysis)

@@ -14,6 +14,9 @@ from .serializers import PassSerializer_PassesPerStation, PassSerializer_PassesA
 from rest_framework import generics, serializers
 from django.db.models import Sum
 from . import examples
+from django.http import HttpResponse, JsonResponse
+import pandas as pd
+from json import dumps
 
 from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, extend_schema, OpenApiResponse, inline_serializer, PolymorphicProxySerializer, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
@@ -25,6 +28,37 @@ stations_csv_path = 'backend/sample_data/sampledata01_stations.csv'
 vehicles_csv_path = 'backend/sample_data/sampledata01_vehicles_100.csv'
 providers_csv_path = 'backend/sample_data/sampledata01_providers.csv'
 passes_csv_path = 'backend/sample_data/sampledata01_passes100_8000.csv'
+
+def formatted_response(json_dict):
+    """
+    Flattens json files and returns csv
+    """
+    passes_name = None
+    if 'PassesList' in json_dict.keys():
+        passes_name = 'PassesList'
+    elif 'PPOList' in json_dict.keys():
+        passes_name = 'PPOList'
+    if passes_name is not None:
+        meta_list = [i for i in json_dict.keys()]
+        meta_list.remove(passes_name)
+        res = pd.json_normalize(json_dict, meta=meta_list, record_path=[passes_name])
+    else:
+        res = pd.json_normalize(json_dict)
+
+    return res.to_csv(None)
+
+
+def response_generator(response_data, response_status, response_format_param):
+    """
+    Returns proper http response depending on the ?format=... parameter
+    """
+
+    if response_format_param == 'csv':
+        csv_response_data = formatted_response(response_data)
+        # print(csv_response_data)
+        return HttpResponse(csv_response_data, response_status)
+    else:
+        return Response(response_data, status = response_status)
 
 
 def all_stations_invalid():
@@ -161,7 +195,8 @@ def insert_providers_from_csv(providers_csv_param=providers_csv_path):
                 raise e
     return
 
-def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
+
+def admin_hardreset(response_format = 'json'):
     """
     Implements /admin/hardreset API call.
     Deletes all the database entries and then re-inserts all the Providers, Stations, Vehicles and Passes.
@@ -178,12 +213,16 @@ def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
         Pass.objects.all().delete()
         #Payment.objects.all().delete()
 
-        # Insert passes
+        # Insert providers
         try:
             insert_providers_from_csv(providers_csv_param=providers_csv_path)
         except Exception as e:
             print(e)
-            return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return response_generator(
+                {"status": "failed"}, 
+                status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                response_format
+            )
 
         #Insert stations
         with open(stations_csv_path) as csv_file:
@@ -197,7 +236,11 @@ def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
                 try:
                     update_station_from_csv_line(row)
                 except Exception as e:
-                    return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return response_generator(
+                        {"status": "failed"}, 
+                        status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                        response_format
+                    )
 
         #Insert vehicles
         with open(vehicles_csv_path) as csv_file:
@@ -212,16 +255,24 @@ def admin_hardreset(response_format = 'json', passes_csv=passes_csv_path):
                     update_vehicle_from_csv_line(row)
                 except Exception as e:
                     print(e)
-                    return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return response_generator(
+                        {"status": "failed"}, 
+                        status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                        response_format
+                    )
 
         # Insert passes
         try:
-            insert_passes_from_csv(passes_csv_path_param=passes_csv)
+            insert_passes_from_csv(passes_csv_path_param=passes_csv_path)
         except Exception as e:
             print(e)
-            return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return response_generator(
+                        {"status": "failed"}, 
+                        status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                        response_format
+                    )
 
-    return Response({"status": "OK"}, status.HTTP_200_OK)
+    return response_generator({"status": "OK"}, status.HTTP_200_OK, response_format)
 
 
 def admin_healthcheck(response_format = 'json'):
@@ -234,9 +285,13 @@ def admin_healthcheck(response_format = 'json'):
     try:
         connection.ensure_connection()
     except Exception as e:
-        return Response({"status": "failed", "dbconnection": connection_string}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response_data = {"status": "failed", "dbconnection": connection_string}
+        response_status = status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
-        return Response({"status": "OK", "dbconnection": connection_string}, status.HTTP_200_OK)
+        response_data = {"status": "OK", "dbconnection": connection_string}
+        response_status = status.HTTP_200_OK       
+
+    return response_generator(response_data, response_status, response_format)
 
 
 def initialize_super_user():
@@ -265,14 +320,14 @@ def admin_resetpasses(response_format = 'json'):
     try:
         Pass.objects.all().delete()
     except Exception as e:
-        return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response_generator({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR, response_format)
 
     try:
         initialize_super_user()
     except Exception as e:
-        return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response_generator({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR, response_format)
 
-    return Response({"status": "OK"}, status.HTTP_200_OK)
+    return response_generator({"status": "OK"}, status.HTTP_200_OK, response_format)
 
 
 def admin_resetstations(response_format = 'json'):
@@ -284,7 +339,7 @@ def admin_resetstations(response_format = 'json'):
     try:
         all_stations_invalid()
     except Exception as e:
-        return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response_generator({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR, response_format)
 
     with open(stations_csv_path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=';')
@@ -297,9 +352,9 @@ def admin_resetstations(response_format = 'json'):
                 try:
                     update_station_from_csv_line(row)
                 except Exception as e:
-                    return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return response_generator({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR, response_format)
 
-    return Response({"status": "OK"}, status.HTTP_200_OK)
+    return response_generator({"status": "OK"}, status.HTTP_200_OK, response_format)
 
 
 def admin_resetvehicles(response_format = 'json'):
@@ -311,7 +366,7 @@ def admin_resetvehicles(response_format = 'json'):
     try:
         all_vehicles_invalid()
     except Exception as e:
-        return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response_generator({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR, response_format)
 
     with open(vehicles_csv_path) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
@@ -324,9 +379,9 @@ def admin_resetvehicles(response_format = 'json'):
             try:
                 update_vehicle_from_csv_line(row)
             except Exception as e:
-                return Response({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return response_generator({"status": "failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR, response_format)
 
-    return Response({"status": "OK"}, status.HTTP_200_OK)
+    return response_generator({"status": "OK"}, status.HTTP_200_OK, response_format)
 
 
 class LoginView(TokenObtainPairView):
@@ -345,6 +400,13 @@ def get_datetime_from_kwarg(kwarg_date: str) -> datetime:
     return datetime.strptime(kwarg_date, '%Y%m%d')
 
 
+def find_response_format_for_class_based(request, **kwargs):
+    if "format" in kwargs:
+        return kwargs["format"]
+    else:
+        return request.GET.get('format', 'json')
+
+
 DATE_FROM = OpenApiParameter(
                 name='datefrom',
                 type=OpenApiTypes.DATE,
@@ -359,6 +421,7 @@ DATE_FROM = OpenApiParameter(
                     )                  
                 ],
 )
+
 
 DATE_TO = OpenApiParameter(
                 name='dateto',
@@ -375,6 +438,7 @@ DATE_TO = OpenApiParameter(
                 ],
 )
 
+
 OP1_ID = OpenApiParameter(
                 name='op1_ID',
                 type=OpenApiTypes.STR,
@@ -389,6 +453,7 @@ OP1_ID = OpenApiParameter(
                     )                  
                 ],
 )
+
 
 OP2_ID = OpenApiParameter(
                 name='op2_ID',
@@ -405,6 +470,7 @@ OP2_ID = OpenApiParameter(
                 ],
 )
 
+
 OP_ID = OpenApiParameter(
                 name='op_ID',
                 type=OpenApiTypes.STR,
@@ -419,6 +485,7 @@ OP_ID = OpenApiParameter(
                     )                  
                 ],
 )
+
 
 STATION_ID = OpenApiParameter(
                 name='stationID',
@@ -435,13 +502,13 @@ STATION_ID = OpenApiParameter(
                 ],
 )
 
+
 class PassesPerStation(generics.ListAPIView):
     """
     Return a list with all the passes for a given stationID and date range
     """
 
     serializer_class = PassSerializer_PassesPerStation
-    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         station_id = self.kwargs['stationID']
@@ -450,11 +517,14 @@ class PassesPerStation(generics.ListAPIView):
         return Pass.objects.filter(stationref__stationid=station_id, timestamp__lte=date_to, timestamp__gte=date_from)
 
     def list(self, request, *args, **kwargs):
+        response_format = find_response_format_for_class_based(request, **kwargs)
+        invalid_request_response = response_generator({"status": "failed"}, status.HTTP_400_BAD_REQUEST, response_format) 
+
         try:
             queryset = self.filter_queryset(self.get_queryset())
         except Exception as e:
             print(e)
-            return self.invalid_request_response
+            return invalid_request_response
         page = self.paginate_queryset(queryset)
         station_id = self.kwargs['stationID']
         date_from = get_datetime_from_kwarg(self.kwargs['datefrom']).date()
@@ -470,7 +540,7 @@ class PassesPerStation(generics.ListAPIView):
             station = Station.objects.get(stationid=station_id)
         except Exception as e:
             # TODO: Decide if we need to return 500 or 400 error codes when an invalid param is passed eg here
-            return self.invalid_request_response
+            return invalid_request_response
         station_provider = station.stationprovider.providername
         response_data = {
             'Station': station_id,
@@ -490,7 +560,8 @@ class PassesPerStation(generics.ListAPIView):
             response_code = status.HTTP_402_PAYMENT_REQUIRED
         else:
             response_code = status.HTTP_200_OK
-        return Response(response_data, status=response_code)
+
+        return response_generator(response_data, response_code, response_format)
 
     @extend_schema (
         parameters=[
@@ -634,7 +705,6 @@ class PassesAnalysis(generics.ListAPIView):
     """
 
     serializer_class = PassSerializer_PassesAnalysis
-    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         """
@@ -664,10 +734,13 @@ class PassesAnalysis(generics.ListAPIView):
         """
             Overwrite the method to add custom values to the response
         """
+        response_format = find_response_format_for_class_based(request, **kwargs)
+        invalid_request_response = response_generator({"status": "failed"}, status.HTTP_400_BAD_REQUEST, response_format) 
+
         try:
             queryset = self.filter_queryset(self.get_queryset())
         except Exception as e:
-            return self.invalid_request_response
+            return invalid_request_response
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
         op2_id_from_request = self.kwargs['op2_ID']
@@ -698,7 +771,8 @@ class PassesAnalysis(generics.ListAPIView):
             response_code = status.HTTP_402_PAYMENT_REQUIRED
         else:
             response_code = status.HTTP_200_OK
-        return Response(response_data, status=response_code)
+        # response_format = 'csv'
+        return response_generator(response_data, response_code, response_format)
 
     @extend_schema (
         parameters=[
@@ -846,7 +920,6 @@ class PassesCost(generics.ListAPIView):
     """
 
     serializer_class = PassSerializer_PassesAnalysis
-    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         """
@@ -876,10 +949,13 @@ class PassesCost(generics.ListAPIView):
         """
             Overwrite the method to add custom values to the response
         """
+        response_format = find_response_format_for_class_based(request, **kwargs)
+        invalid_request_response = response_generator({"status": "failed"}, status.HTTP_400_BAD_REQUEST, response_format) 
+
         try:
             queryset = self.filter_queryset(self.get_queryset())
         except Exception as e:
-            return self.invalid_request_response
+            return invalid_request_response
         price = queryset.aggregate(Sum('charge'))['charge__sum']
         page = self.paginate_queryset(queryset)
         op1_id_from_request = self.kwargs['op1_ID']
@@ -913,7 +989,8 @@ class PassesCost(generics.ListAPIView):
             response_code = status.HTTP_402_PAYMENT_REQUIRED
         else:
             response_code = status.HTTP_200_OK
-        return Response(response_data, status=response_code)
+           
+        return response_generator(response_data, response_code, response_format)
 
     @extend_schema (
         parameters=[
@@ -1056,7 +1133,6 @@ class ChargesBy(generics.GenericAPIView):
     """
 
     serializer_class = PassSerializer_PassesAnalysis
-    invalid_request_response = Response({"status": "failed"}, status.HTTP_400_BAD_REQUEST)
 
     def get_costs_between_operators(self, op1_abbr, op2_abbr, date_from, date_to):
         op1_id = (Provider.objects.get(providerabbr=op1_abbr)).providerid
@@ -1196,6 +1272,8 @@ class ChargesBy(generics.GenericAPIView):
         ],
     )
     def get(self, request, *args, **kwargs):
+        response_format = find_response_format_for_class_based(request, **kwargs)
+        invalid_request_response = response_generator({"status": "failed"}, status.HTTP_400_BAD_REQUEST, response_format)
 
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         op_id_from_request = self.kwargs['op_ID']
@@ -1210,7 +1288,7 @@ class ChargesBy(generics.GenericAPIView):
             try:
                 cost = self.get_costs_between_operators(op_id_from_request, visiting_operator_abbr, date_from, date_to)
             except Exception as e:
-                return self.invalid_request_response
+                return invalid_request_response
             costs.append(cost)
         response_data = {
             'op_ID': op_id_from_request,
@@ -1235,4 +1313,5 @@ class ChargesBy(generics.GenericAPIView):
             response_code = status.HTTP_402_PAYMENT_REQUIRED
         else:
             response_code = status.HTTP_200_OK
-        return Response(response_data, status=response_code)
+      
+        return response_generator(response_data, response_code, response_format)
