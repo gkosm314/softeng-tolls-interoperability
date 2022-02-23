@@ -9,10 +9,11 @@ You can find out how to install it [here](https://github.com/ntua/TL21-55/blob/m
 ## Implementation
 
 The project was implemented in Python. We used:
-* [Django](https://www.djangoproject.com/) (for the backend)
-* [Django REST framework](https://www.django-rest-framework.org/) (for the REST API)
-* [django-rest-framework-jwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/) (for the authentication)
-* [Bootstrap](https://getbootstrap.com) (for the frontend)
+* [Django](https://www.djangoproject.com/) (backend)
+* [Django REST framework](https://www.django-rest-framework.org/) (REST API)
+* [django-rest-framework-jwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/) (authentication)
+* [MySQL](https://www.mysql.com/) (DBMS)
+* [Bootstrap](https://getbootstrap.com) (frontend)
 
 ## Testing
 
