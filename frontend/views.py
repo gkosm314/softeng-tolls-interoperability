@@ -139,8 +139,8 @@ def handle_file(f):
         raise e
 
     #Path of the new file that will be saved locally
-    current_datetime_now = datetime.now().strftime("%m_%d_%Y_%H:%M:%S")
-    new_file_name = join(target_dir, file_name + '_' + current_datetime_now + file_extension)
+    current_datetime_now = datetime.now().strftime("%Y_%m_%d_%H:%M:%S")
+    new_file_name = join(target_dir, current_datetime_now + '_' + f.name)
 
     #Open the file and copy the uploaded file's content inside it
     with open(new_file_name, 'wb+') as target_file:
