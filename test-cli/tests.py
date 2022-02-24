@@ -331,3 +331,72 @@ class TestHealthCheckCli(TestCase):
             x.func(x)
         s = f.getvalue()
         self.assertJSONEqual(json.dumps(self.expected_json_output), s)
+
+
+class TestUsermodCliParser(TestCase):
+    """
+    Tests that the parser works when used with the usermod argument
+    """
+    @transaction.atomic()
+    def setUp(self) -> None:
+        self.username = 'UsermodCliTestUser'
+        self.password = 'UsermodCliTestUserPassword'
+        self.new_password = 'NewUsermodCliTestUserPassword'
+        self.email = 'UsermodCliTestUser@email.com'
+        self.args = ['admin', '--usermod', '--username', self.username, '--passw', self.password]
+        self.new_pwd_args = ['admin', '--usermod', '--username', self.username, '--passw', self.new_password]
+        (self.main_parser, self.admin_parser) = setup_main_parser()
+        # Make sure the user doesn't exist already in the db
+        self.assertFalse(User.objects.filter(username=self.username).exists())
+
+    @transaction.atomic()
+    def tearDown(self) -> None:
+        """
+        Delete the user created so it doesn't affect other TCs
+        """
+        if User.objects.filter(username=self.username).exists():
+            User.objects.get(username=self.username).delete()
+
+    def test_user_creation_cli(self):
+        """
+        Tests that the user is created if they do not exist already
+        """
+        known_args = self.main_parser.parse_known_args(self.args)[0]
+        self.admin_parser.add_argument('--username', required="True", type=valid_username_format)
+        self.admin_parser.add_argument('--passw', required="True")
+        self.admin_parser.set_defaults(func=cli.commands.cli_admin_usermod)
+        x = self.main_parser.parse_args(self.args)
+        x.func(x)
+        self.assertTrue(User.objects.filter(username=self.username).exists())
+
+    def test_old_password_doesnt_work(self):
+        """
+        Tests that the old password for an existing user doesn't work after modification
+        """
+        user = User.objects.create_user(username=self.username,
+                                        email=self.email,
+                                        password=self.password)
+        known_args = self.main_parser.parse_known_args(self.new_pwd_args)[0]
+        self.admin_parser.add_argument('--username', required="True", type=valid_username_format)
+        self.admin_parser.add_argument('--passw', required="True")
+        self.admin_parser.set_defaults(func=cli.commands.cli_admin_usermod)
+        x = self.main_parser.parse_args(self.new_pwd_args)
+        x.func(x)
+        user = User.objects.get(username=self.username)
+        self.assertFalse(user.check_password(self.password))
+
+    def test_new_password_works(self):
+        """
+        Tests that the new password for an existing user is working after modification
+        """
+        user = User.objects.create_user(username=self.username,
+                                        email=self.email,
+                                        password=self.password)
+        known_args = self.main_parser.parse_known_args(self.new_pwd_args)[0]
+        self.admin_parser.add_argument('--username', required="True", type=valid_username_format)
+        self.admin_parser.add_argument('--passw', required="True")
+        self.admin_parser.set_defaults(func=cli.commands.cli_admin_usermod)
+        x = self.main_parser.parse_args(self.new_pwd_args)
+        x.func(x)
+        user = User.objects.get(username=self.username)
+        self.assertTrue(user.check_password(self.new_password))
