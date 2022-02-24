@@ -8,6 +8,7 @@ from argparse import Namespace
 from rest_framework.response import Response
 from django.http import HttpResponse
 from cli.parser import *
+import cli.commands
 # Create your tests here.
 
 
@@ -290,3 +291,43 @@ class TestValidUsernameFormat(TestCase):
         """
         ret = valid_username_format(self.correct_username)
         self.assertEqual(ret, self.correct_return)
+
+
+class TestHealthCheckCli(TestCase):
+    """
+    Tests that the parser works when used with the healthcheck argument
+    Test Data:
+     - test-cli/test_data/healthcheck_csv.txt
+     - test-cli/test_data/healthcheck.json
+     - test-cli/test_data/healthcheck_no_format.txt
+    """
+    def setUp(self) -> None:
+        self.csv_output_args = ['healthcheck', '--format', 'csv']
+        self.json_output_args = ['healthcheck', '--format', 'json']
+        self.no_format_args = ['healthcheck']
+        (self.main_parser, self.admin_parser) = setup_main_parser()
+        self.csv_output_path = 'test-cli/test_data/healthcheck_csv.txt'
+        with open(self.csv_output_path, 'r') as f:
+            self.expected_csv_output = f.read().rstrip()
+        self.json_output_path = 'test-cli/test_data/healthcheck.json'
+        with open(self.json_output_path, 'r') as f:
+            self.expected_json_output = json.load(f)
+        self.no_format_output_path = 'test-cli/test_data/healthcheck_no_format.txt'
+        with open(self.no_format_output_path, 'r') as f:
+            self.expected_no_format = f.read().rstrip()
+
+    def test_healthcheck_cli_csv(self):
+        x = self.main_parser.parse_args(self.csv_output_args)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            x.func(x)
+        s = f.getvalue()
+        self.assertEqual(s.rstrip(), self.expected_csv_output)
+
+    def test_healthcheck_cli_json(self):
+        x = self.main_parser.parse_args(self.json_output_args)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            x.func(x)
+        s = f.getvalue()
+        self.assertJSONEqual(json.dumps(self.expected_json_output), s)

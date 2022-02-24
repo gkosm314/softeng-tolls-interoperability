@@ -1,0 +1,3 @@
+,status,dbconnection
+0,OK,mysql://tolls_root:tolls1234@127.0.0.1:3306/tolls_app_database
+
