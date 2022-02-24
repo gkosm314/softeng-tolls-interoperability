@@ -1,0 +1,2 @@
+usage: parser.py healthcheck [-h] --format {json,csv} [--output OUTPUT]
+parser.py healthcheck: error: the following arguments are required: --format

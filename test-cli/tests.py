@@ -8,6 +8,7 @@ from argparse import Namespace
 from rest_framework.response import Response
 from django.http import HttpResponse
 from cli.parser import *
+import cli.commands
 # Create your tests here.
 
 
@@ -290,3 +291,112 @@ class TestValidUsernameFormat(TestCase):
         """
         ret = valid_username_format(self.correct_username)
         self.assertEqual(ret, self.correct_return)
+
+
+class TestHealthCheckCli(TestCase):
+    """
+    Tests that the parser works when used with the healthcheck argument
+    Test Data:
+     - test-cli/test_data/healthcheck_csv.txt
+     - test-cli/test_data/healthcheck.json
+     - test-cli/test_data/healthcheck_no_format.txt
+    """
+    def setUp(self) -> None:
+        self.csv_output_args = ['healthcheck', '--format', 'csv']
+        self.json_output_args = ['healthcheck', '--format', 'json']
+        self.no_format_args = ['healthcheck']
+        (self.main_parser, self.admin_parser) = setup_main_parser()
+        self.csv_output_path = 'test-cli/test_data/healthcheck_csv.txt'
+        with open(self.csv_output_path, 'r') as f:
+            self.expected_csv_output = f.read().rstrip()
+        self.json_output_path = 'test-cli/test_data/healthcheck.json'
+        with open(self.json_output_path, 'r') as f:
+            self.expected_json_output = json.load(f)
+        self.no_format_output_path = 'test-cli/test_data/healthcheck_no_format.txt'
+        with open(self.no_format_output_path, 'r') as f:
+            self.expected_no_format = f.read().rstrip()
+
+    def test_healthcheck_cli_csv(self):
+        x = self.main_parser.parse_args(self.csv_output_args)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            x.func(x)
+        s = f.getvalue()
+        self.assertEqual(s.rstrip(), self.expected_csv_output)
+
+    def test_healthcheck_cli_json(self):
+        x = self.main_parser.parse_args(self.json_output_args)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            x.func(x)
+        s = f.getvalue()
+        self.assertJSONEqual(json.dumps(self.expected_json_output), s)
+
+
+class TestUsermodCliParser(TestCase):
+    """
+    Tests that the parser works when used with the usermod argument
+    """
+    @transaction.atomic()
+    def setUp(self) -> None:
+        self.username = 'UsermodCliTestUser'
+        self.password = 'UsermodCliTestUserPassword'
+        self.new_password = 'NewUsermodCliTestUserPassword'
+        self.email = 'UsermodCliTestUser@email.com'
+        self.args = ['admin', '--usermod', '--username', self.username, '--passw', self.password]
+        self.new_pwd_args = ['admin', '--usermod', '--username', self.username, '--passw', self.new_password]
+        (self.main_parser, self.admin_parser) = setup_main_parser()
+        # Make sure the user doesn't exist already in the db
+        self.assertFalse(User.objects.filter(username=self.username).exists())
+
+    @transaction.atomic()
+    def tearDown(self) -> None:
+        """
+        Delete the user created so it doesn't affect other TCs
+        """
+        if User.objects.filter(username=self.username).exists():
+            User.objects.get(username=self.username).delete()
+
+    def test_user_creation_cli(self):
+        """
+        Tests that the user is created if they do not exist already
+        """
+        known_args = self.main_parser.parse_known_args(self.args)[0]
+        self.admin_parser.add_argument('--username', required="True", type=valid_username_format)
+        self.admin_parser.add_argument('--passw', required="True")
+        self.admin_parser.set_defaults(func=cli.commands.cli_admin_usermod)
+        x = self.main_parser.parse_args(self.args)
+        x.func(x)
+        self.assertTrue(User.objects.filter(username=self.username).exists())
+
+    def test_old_password_doesnt_work(self):
+        """
+        Tests that the old password for an existing user doesn't work after modification
+        """
+        user = User.objects.create_user(username=self.username,
+                                        email=self.email,
+                                        password=self.password)
+        known_args = self.main_parser.parse_known_args(self.new_pwd_args)[0]
+        self.admin_parser.add_argument('--username', required="True", type=valid_username_format)
+        self.admin_parser.add_argument('--passw', required="True")
+        self.admin_parser.set_defaults(func=cli.commands.cli_admin_usermod)
+        x = self.main_parser.parse_args(self.new_pwd_args)
+        x.func(x)
+        user = User.objects.get(username=self.username)
+        self.assertFalse(user.check_password(self.password))
+
+    def test_new_password_works(self):
+        """
+        Tests that the new password for an existing user is working after modification
+        """
+        user = User.objects.create_user(username=self.username,
+                                        email=self.email,
+                                        password=self.password)
+        known_args = self.main_parser.parse_known_args(self.new_pwd_args)[0]
+        self.admin_parser.add_argument('--username', required="True", type=valid_username_format)
+        self.admin_parser.add_argument('--passw', required="True")
+        self.admin_parser.set_defaults(func=cli.commands.cli_admin_usermod)
+        x = self.main_parser.parse_args(self.new_pwd_args)
+        x.func(x)
+        user = User.objects.get(username=self.username)
+        self.assertTrue(user.check_password(self.new_password))
