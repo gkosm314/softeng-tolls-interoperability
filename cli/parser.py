@@ -9,6 +9,13 @@ import argparse, os, sys, pathlib
 from datetime import datetime
 from argparse import ArgumentTypeError
 
+# This is needed in case we are running the tests and the root is different
+try:
+	import cli.commands as commands
+except:
+	pass
+
+
 def django_settings_setup():
 	"""
 	Our CLI uses Django through the commands.py script.
