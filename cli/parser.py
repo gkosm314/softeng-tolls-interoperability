@@ -40,7 +40,7 @@ def valid_username_format(s):
 	Checks if a string is a valid username. This function is used for type checking by the main parser.
 	"""
 	try:
-		s = s.encode("iso-8859-1")
+		s.encode("iso-8859-1")
 		return s
 	except UnicodeDecodeError:
 		invalid_username_error_msg = "\nInvalid username format. Usernames should not contain non-latin characters.\n"

@@ -262,7 +262,7 @@ class TestValidUsernameFormat(TestCase):
         """
         self.correct_username = 'ParserTestUsername'
         self.wrong_username = 'Δεν είναι δεκτό'
-        self.correct_return = self.correct_username.encode("iso-8859-1")
+        self.correct_return = self.correct_username
 
     def test_wrong_username_format(self):
         """
