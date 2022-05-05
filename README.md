@@ -31,3 +31,10 @@ In order to run the tests execute the following command from the source director
 ```
 python manage.py test
 ```
+
+## Screenshots
+<img src="/doc/screenshots/statistics_image.png" width="60%" height="60%">
+
+<img src="/doc/screenshots/upload_image.png" width="60%" height="60%">
+
+<img src="/doc/screenshots/swaggerui_image.png" width="60%" height="60%">
