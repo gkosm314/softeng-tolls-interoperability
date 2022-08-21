@@ -12,6 +12,7 @@ The project was implemented in Python. We used:
 * [Django](https://www.djangoproject.com/) (backend)
 * [Django REST framework](https://www.django-rest-framework.org/) (REST API)
 * [django-rest-framework-jwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/) (authentication)
+* [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/) (API documentation/demo)
 * [MySQL](https://www.mysql.com/) (DBMS)
 * [Bootstrap](https://getbootstrap.com), [chartjs](https://www.chartjs.org/) (frontend)
 
